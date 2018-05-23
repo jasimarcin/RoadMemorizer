@@ -27,9 +27,10 @@
         app:layout_constraintTop_toBottomOf="@+id/toolbar_guideline"
         app:navGraph="@navigation/main_navigation" />
 
-    <include
+    <com.marcin.jasi.roadmemorizer.general.view.AppToolbar
         android:id="@+id/toolbar"
-        layout="@layout/app_toolbar"
+        android:layout_height="wrap_content"
+        android:layout_width="0dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
