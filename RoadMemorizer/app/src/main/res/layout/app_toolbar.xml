@@ -20,6 +20,7 @@
             app:layout_constraintDimensionRatio="1"
             android:background="@color/colorPrimary"
             android:maxHeight="?actionBarSize"
+            android:rotation="180"
             android:padding="5dp"
             android:src="@drawable/spinner_arrow"
             app:layout_constraintBottom_toBottomOf="parent"
