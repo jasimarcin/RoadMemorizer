@@ -8,7 +8,7 @@ public class RowAppToolbarViewModel {
         this.data = data;
     }
 
-    String getTitle() {
+    public String getTitle() {
         return data.getRowText();
     }
 }

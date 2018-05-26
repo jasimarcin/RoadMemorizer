@@ -10,9 +10,7 @@
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="?actionBarSize"
-        android:background="#666"
-        android:padding="5dp">
-
+        android:padding="@dimen/app_toolbar_padding">
 
         <View
             android:layout_width="0dp"
@@ -29,7 +27,7 @@
             android:layout_height="0dp"
             android:background="@null"
             android:maxHeight="?actionBarSize"
-            android:padding="5dp"
+            android:padding="@dimen/app_toolbar_padding"
             android:rotation="180"
             android:src="@drawable/spinner_arrow"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -43,7 +41,6 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginStart="5dp"
-            android:background="#555"
             android:textColor="@color/colorPrimaryText"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toRightOf="@+id/arrow"
