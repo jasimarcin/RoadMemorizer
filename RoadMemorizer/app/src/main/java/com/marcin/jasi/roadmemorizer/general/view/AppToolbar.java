@@ -4,12 +4,15 @@ import android.content.Context;
 import android.databinding.DataBindingUtil;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 
@@ -17,6 +20,8 @@ import com.jakewharton.rxbinding2.view.RxView;
 import com.marcin.jasi.roadmemorizer.R;
 import com.marcin.jasi.roadmemorizer.databinding.AppToolbarBinding;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -72,6 +77,18 @@ public class AppToolbar extends LinearLayout {
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         popUpLayout = inflater.inflate(R.layout.pop_up_layout, findViewById(R.id.relative_layout));
+
+        RecyclerView recyclerView = popUpLayout.findViewById(R.id.recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        List<AppToolbarData> dataList = new ArrayList<>();
+        dataList.add(new AppToolbarData(0,"number one"));
+        dataList.add(new AppToolbarData(1,"number two"));
+        dataList.add(new AppToolbarData(2,"number three"));
+
+        AppToolbarAdapter adapter = new AppToolbarAdapter(dataList, null);
+
+        recyclerView.setAdapter(adapter);
 
         popUpList = new PopupWindow(popUpLayout,
                 ViewPager.LayoutParams.MATCH_PARENT,

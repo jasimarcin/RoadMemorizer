@@ -9,31 +9,42 @@
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
-        android:padding="5dp"
+        android:layout_height="?actionBarSize"
         android:background="#666"
-        android:layout_height="?actionBarSize">
+        android:padding="5dp">
+
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@color/colorPrimary"
+            app:layout_constraintBottom_toBottomOf="@+id/arrow"
+            app:layout_constraintLeft_toLeftOf="@+id/arrow"
+            app:layout_constraintRight_toRightOf="@+id/arrow"
+            app:layout_constraintTop_toTopOf="@+id/arrow" />
 
         <ImageView
             android:id="@+id/arrow"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_constraintDimensionRatio="1"
-            android:background="@color/colorPrimary"
+            android:background="@null"
             android:maxHeight="?actionBarSize"
-            android:rotation="180"
             android:padding="5dp"
+            android:rotation="180"
             android:src="@drawable/spinner_arrow"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintDimensionRatio="1"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
 
         <TextView
             android:id="@+id/title"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginStart="5dp"
-            android:textColor="@color/colorPrimaryText"
             android:background="#555"
+            android:textColor="@color/colorPrimaryText"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toRightOf="@+id/arrow"
             app:layout_constraintRight_toRightOf="parent"
