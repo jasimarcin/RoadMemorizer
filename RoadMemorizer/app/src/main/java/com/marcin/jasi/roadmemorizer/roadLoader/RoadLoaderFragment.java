@@ -4,14 +4,16 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.marcin.jasi.roadmemorizer.R;
+import com.marcin.jasi.roadmemorizer.general.common.presentation.CommonFragment;
 
-public class RoadLoaderFragment extends Fragment {
+public class RoadLoaderFragment extends CommonFragment {
+
+    public static final String TITLE = "";
 
     private RoadLoaderViewModel mViewModel;
 
@@ -29,6 +31,11 @@ public class RoadLoaderFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mViewModel = ViewModelProviders.of(this).get(RoadLoaderViewModel.class);
+    }
+
+    @Override
+    protected String getFragmentTitle() {
+        return TITLE;
     }
 
 }

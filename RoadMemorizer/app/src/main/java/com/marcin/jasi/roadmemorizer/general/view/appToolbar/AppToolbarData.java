@@ -1,4 +1,4 @@
-package com.marcin.jasi.roadmemorizer.general.view;
+package com.marcin.jasi.roadmemorizer.general.view.appToolbar;
 
 public class AppToolbarData {
 

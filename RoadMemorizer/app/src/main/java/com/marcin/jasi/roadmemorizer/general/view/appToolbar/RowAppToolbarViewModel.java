@@ -1,4 +1,4 @@
-package com.marcin.jasi.roadmemorizer.general.view;
+package com.marcin.jasi.roadmemorizer.general.view.appToolbar;
 
 public class RowAppToolbarViewModel {
 
@@ -11,4 +11,5 @@ public class RowAppToolbarViewModel {
     public String getTitle() {
         return data.getRowText();
     }
+
 }

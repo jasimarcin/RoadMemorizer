@@ -1,10 +1,10 @@
-package com.marcin.jasi.roadmemorizer.general.view;
+package com.marcin.jasi.roadmemorizer.general.view.appToolbar;
 
 import android.content.Context;
 import android.databinding.DataBindingUtil;
+import android.databinding.ObservableField;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
-import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
@@ -13,14 +13,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
-import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 
 import com.jakewharton.rxbinding2.view.RxView;
 import com.marcin.jasi.roadmemorizer.R;
 import com.marcin.jasi.roadmemorizer.databinding.AppToolbarBinding;
-import com.marcin.jasi.roadmemorizer.general.common.VerticalRecyclerDivider;
+import com.marcin.jasi.roadmemorizer.general.common.presentation.VerticalRecyclerDivider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,22 +27,28 @@ import java.util.concurrent.TimeUnit;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import timber.log.Timber;
 
-// todo AppToolbar
-// implement mvvm
-// add view model
-// add opportunity to set list
-// add callback to set list
+
 public class AppToolbar extends LinearLayout {
+
+    public interface AppToolbarListener {
+        void onItemClick(AppToolbarData item);
+    }
 
     private AppToolbarBinding binding;
     private View popUpLayout;
     private PopupWindow popUpList;
     private RotateAnimation collapseAnimation;
     private RotateAnimation expandAnimation;
+    private List<AppToolbarData> items = new ArrayList<>();
+    private AppToolbarAdapter adapter;
+    private RecyclerView recyclerView;
+    private AppToolbarListener clickListener;
+    private ObservableField<String> header = new ObservableField<>();
     private boolean popUpIsShow;
 
-    private CompositeDisposable disposable;
+    private CompositeDisposable disposable = new CompositeDisposable();
 
     public AppToolbar(Context context) {
         this(context, null);
@@ -57,23 +62,11 @@ public class AppToolbar extends LinearLayout {
         super(context, attrs, defStyleAttr);
 
         binding = DataBindingUtil.inflate(LayoutInflater.from(context), R.layout.app_toolbar, this, true);
+        binding.setController(this);
 
         initPopUpList();
         setOnArrowClickListener();
-
-        collapseAnimation = new RotateAnimation(180, 0, Animation.RELATIVE_TO_SELF,
-                0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-        collapseAnimation.setDuration(500);
-        collapseAnimation.setFillAfter(true);
-        collapseAnimation.setFillEnabled(true);
-        collapseAnimation.setRepeatCount(0);
-
-        expandAnimation = new RotateAnimation(0, 180, Animation.RELATIVE_TO_SELF,
-                0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-        expandAnimation.setDuration(500);
-        expandAnimation.setFillAfter(true);
-        expandAnimation.setFillEnabled(true);
-        expandAnimation.setRepeatCount(0);
+        setupAnimations();
     }
 
     private void initPopUpList() {
@@ -82,20 +75,7 @@ public class AppToolbar extends LinearLayout {
 
         popUpLayout = inflater.inflate(R.layout.pop_up_layout, findViewById(R.id.relative_layout));
 
-        RecyclerView recyclerView = popUpLayout.findViewById(R.id.recycler_view);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-        List<AppToolbarData> dataList = new ArrayList<>();
-        dataList.add(new AppToolbarData(0, "number one"));
-        dataList.add(new AppToolbarData(1, "number two"));
-        dataList.add(new AppToolbarData(2, "number three"));
-
-        AppToolbarAdapter adapter = new AppToolbarAdapter(dataList, null);
-
-        recyclerView.setAdapter(adapter);
-
-        VerticalRecyclerDivider divider = new VerticalRecyclerDivider(1);
-        recyclerView.addItemDecoration(divider);
+        setupRecyclerView();
 
         popUpList = new PopupWindow(popUpLayout,
                 ViewPager.LayoutParams.MATCH_PARENT,
@@ -106,25 +86,67 @@ public class AppToolbar extends LinearLayout {
         popUpList.setAnimationStyle(R.style.PopUpAnimationStyle);
     }
 
+    private void setupRecyclerView() {
+        recyclerView = popUpLayout.findViewById(R.id.recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        adapter = new AppToolbarAdapter(items, item -> {
+
+            popUpList.dismiss();
+
+            if (clickListener != null)
+                clickListener.onItemClick(item);
+        });
+
+        recyclerView.setAdapter(adapter);
+
+        VerticalRecyclerDivider divider = new VerticalRecyclerDivider(1);
+        recyclerView.addItemDecoration(divider);
+    }
+
     private void setOnArrowClickListener() {
         disposable.add(
                 RxView.clicks(binding.arrow)
                         .throttleFirst(500, TimeUnit.MILLISECONDS)
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(view -> handleOnArrowClick(),
-                                throwable -> throwable.printStackTrace()));
+                                Timber::d));
+    }
+
+    private void setupAnimations() {
+        collapseAnimation = getAnimation(180, 0);
+        expandAnimation = getAnimation(0, 180);
+    }
+
+    private RotateAnimation getAnimation(int fromDegrees, int toDegrees) {
+        RotateAnimation animation = new RotateAnimation(fromDegrees, toDegrees, Animation.RELATIVE_TO_SELF,
+                0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        animation.setDuration(500);
+        animation.setFillAfter(true);
+        animation.setFillEnabled(true);
+        animation.setRepeatCount(0);
+
+        return animation;
     }
 
     private void handleOnArrowClick() {
         if (popUpIsShow) {
-            popUpIsShow = false;
-            binding.arrow.startAnimation(collapseAnimation);
-            popUpList.dismiss();
+            collapseList();
         } else {
-            popUpIsShow = true;
-            binding.arrow.startAnimation(expandAnimation);
-            showPopUpList();
+            expandList();
         }
+    }
+
+    private void expandList() {
+        popUpIsShow = true;
+        binding.arrow.startAnimation(expandAnimation);
+        showPopUpList();
+    }
+
+    private void collapseList() {
+        popUpIsShow = false;
+        binding.arrow.startAnimation(collapseAnimation);
+        popUpList.dismiss();
     }
 
     private void showPopUpList() {
@@ -137,7 +159,26 @@ public class AppToolbar extends LinearLayout {
         popUpList.showAtLocation(popUpLayout, Gravity.TOP, 0, height);
     }
 
-    public void dipose() {
+    public void setItems(List<AppToolbarData> items) {
+        this.items = items;
+
+        adapter.setItems(items);
+        adapter.notifyDataSetChanged();
+    }
+
+    public void setClickListener(AppToolbarListener clickListener) {
+        this.clickListener = clickListener;
+    }
+
+    public void setHeader(String header) {
+        this.header.set(header);
+    }
+
+    public ObservableField<String> getHeader() {
+        return header;
+    }
+
+    public void dispose() {
         disposable.dispose();
     }
 

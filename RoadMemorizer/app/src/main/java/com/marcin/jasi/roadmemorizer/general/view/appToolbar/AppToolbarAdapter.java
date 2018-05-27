@@ -1,4 +1,4 @@
-package com.marcin.jasi.roadmemorizer.general.view;
+package com.marcin.jasi.roadmemorizer.general.view.appToolbar;
 
 import android.databinding.DataBindingUtil;
 import android.support.annotation.NonNull;
@@ -30,13 +30,13 @@ public class AppToolbarAdapter extends RecyclerView.Adapter<AppToolbarViewHolder
     public AppToolbarViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         RowAppToolbarBinding binding = DataBindingUtil.inflate(layoutInflater, R.layout.row_app_toolbar, parent, false);
-
         return new AppToolbarViewHolder(binding);
     }
 
     @Override
     public void onBindViewHolder(@NonNull AppToolbarViewHolder holder, int position) {
         holder.bind(new RowAppToolbarViewModel(items.get(position)));
+        holder.itemView.setOnClickListener(v -> listener.onItemClick(items.get(position)));
     }
 
     @Override
@@ -45,5 +45,9 @@ public class AppToolbarAdapter extends RecyclerView.Adapter<AppToolbarViewHolder
             return items.size();
         else
             return 0;
+    }
+
+    public void setItems(List<AppToolbarData> items) {
+        this.items = items;
     }
 }

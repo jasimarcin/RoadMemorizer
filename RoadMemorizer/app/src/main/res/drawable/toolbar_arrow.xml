@@ -7,5 +7,5 @@
     <path
         android:fillColor="@color/colorAccent"
         android:pathData="M 50,0 L 93,44 85,50 50,15 15,50 7,44 z" />
-
+    
 </vector>

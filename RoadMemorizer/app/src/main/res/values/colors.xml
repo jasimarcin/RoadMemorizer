@@ -4,4 +4,7 @@
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorPrimaryText">#FFFFFF</color>
     <color name="colorAccent">#FFFFFF</color>
+
+    <color name="navigation_circle_color">#cc008877</color>
+    <color name="navigation_circle_border_color">#55008877</color>
 </resources>

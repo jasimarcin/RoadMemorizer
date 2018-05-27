@@ -1,4 +1,4 @@
-package com.marcin.jasi.roadmemorizer.general.common;
+package com.marcin.jasi.roadmemorizer.general.common.presentation;
 
 import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;

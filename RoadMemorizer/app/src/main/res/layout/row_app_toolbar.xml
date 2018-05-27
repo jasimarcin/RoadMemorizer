@@ -1,28 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
 
     <data>
 
         <variable
             name="viewModel"
-            type="com.marcin.jasi.roadmemorizer.general.view.RowAppToolbarViewModel" />
+            type="com.marcin.jasi.roadmemorizer.general.view.appToolbar.RowAppToolbarViewModel" />
     </data>
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
-        android:background="@color/colorPrimary"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary">
 
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:padding="10dp"
             android:text="@{viewModel.title}"
             android:textColor="@color/colorPrimaryText"
-            android:textSize="20sp"
-            android:padding="10dp"
-            tools:text="sialalalal" />
+            android:textSize="@dimen/row_app_toolbar_text_size" />
 
     </android.support.constraint.ConstraintLayout>
+
 </layout>

@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
+        <variable
+            name="controller"
+            type="com.marcin.jasi.roadmemorizer.general.view.appToolbar.AppToolbar" />
 
     </data>
 
@@ -10,6 +15,7 @@
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="?actionBarSize"
+        android:background="@color/colorPrimaryDark"
         android:padding="@dimen/app_toolbar_padding">
 
         <View
@@ -29,7 +35,7 @@
             android:maxHeight="?actionBarSize"
             android:padding="@dimen/app_toolbar_padding"
             android:rotation="180"
-            android:src="@drawable/spinner_arrow"
+            android:src="@drawable/toolbar_arrow"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintDimensionRatio="1"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -37,10 +43,14 @@
 
 
         <TextView
-            android:id="@+id/title"
+            android:id="@+id/header"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginStart="5dp"
+            android:text="@{controller.header}"
+            tools:text="DEFAULT HEADER"
+            android:textSize="@dimen/row_app_toolbar_text_size"
+            android:gravity="center_vertical"
             android:textColor="@color/colorPrimaryText"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toRightOf="@+id/arrow"
