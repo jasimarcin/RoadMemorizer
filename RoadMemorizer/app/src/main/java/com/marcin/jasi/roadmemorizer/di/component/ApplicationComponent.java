@@ -4,7 +4,7 @@ package com.marcin.jasi.roadmemorizer.di.component;
 import com.marcin.jasi.roadmemorizer.Application;
 import com.marcin.jasi.roadmemorizer.di.module.ApplicationModule;
 import com.marcin.jasi.roadmemorizer.di.scope.PerAppScope;
-import com.marcin.jasi.roadmemorizer.general.common.data.GpsTrackerMediator;
+import com.marcin.jasi.roadmemorizer.general.common.data.LocationTrackerMediator;
 
 import dagger.Component;
 
@@ -16,5 +16,5 @@ public interface ApplicationComponent {
 
     void inject(Application application);
 
-    GpsTrackerMediator gpsTrackerMediator();
+    LocationTrackerMediator gpsTrackerMediator();
 }

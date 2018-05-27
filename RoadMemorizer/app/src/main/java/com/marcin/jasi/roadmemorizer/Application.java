@@ -22,10 +22,11 @@ public class Application extends android.app.Application {
 
         disposable.add(
                 applicationComponent.gpsTrackerMediator()
-                .getGpsEnableChange()
-                .subscribe(newItem -> {
-                    Timber.d(String.format("GPS ENABLE = %s", newItem));
-                })
+                        .getLocationProviderChange()
+                        .subscribe(newItem -> {
+                            Timber.d(String.format("GPS ENABLE = %s %s", newItem.first,
+                                    newItem.second.getClass().getName()));
+                        })
         );
     }
 

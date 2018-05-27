@@ -42,10 +42,10 @@
             android:value="your_api_key" />
 
         <service
-            android:name=".gpsTracker.GPSTracker"
+            android:name=".locationTracker.LocationTrackerService"
             android:exported="false" />
 
-        <receiver android:name=".receiver.GpsPermissionReceiver">
+        <receiver android:name=".receiver.LocationPermissionReceiver">
             <intent-filter>
                 <action android:name="android.location.PROVIDERS_CHANGED" />
             </intent-filter>

@@ -7,29 +7,29 @@ import android.location.LocationManager;
 
 import com.marcin.jasi.roadmemorizer.Application;
 import com.marcin.jasi.roadmemorizer.di.scope.PerServiceScope;
-import com.marcin.jasi.roadmemorizer.general.common.data.GpsTrackerMediator;
+import com.marcin.jasi.roadmemorizer.general.common.data.LocationTrackerMediator;
 import com.marcin.jasi.roadmemorizer.receiver.di.DaggerGpsPrermissionReceiverComponent;
 
 import javax.inject.Inject;
 
 @PerServiceScope
-public class GpsPermissionReceiver extends BroadcastReceiver {
+public class LocationPermissionReceiver extends BroadcastReceiver {
 
-    public static final String GPS_ENABLED_CHANGE_ACTION = "android.location.PROVIDERS_CHANGED";
+    public static final String LOCATION_ENABLED_CHANGE_ACTION = "android.location.PROVIDERS_CHANGED";
 
     @Inject
-    GpsTrackerMediator gpsTrackerMediator;
+    LocationTrackerMediator locationTrackerMediator;
 
     @Override
     public void onReceive(Context context, Intent intent) {
         initDependencies(context);
 
-        if (intent.getAction().equals(GPS_ENABLED_CHANGE_ACTION)) {
+        if (intent.getAction().equals(LOCATION_ENABLED_CHANGE_ACTION)) {
             LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
 
             if (locationManager != null) {
                 boolean enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-                gpsTrackerMediator.getGpsEnableChange().onNext(enabled);
+                locationTrackerMediator.getLocationProviderEnableChange().onNext(enabled);
             }
         }
     }

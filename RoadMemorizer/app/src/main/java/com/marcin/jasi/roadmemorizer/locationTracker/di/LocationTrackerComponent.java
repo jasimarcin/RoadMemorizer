@@ -1,17 +1,17 @@
-package com.marcin.jasi.roadmemorizer.receiver.di;
+package com.marcin.jasi.roadmemorizer.locationTracker.di;
 
 import com.marcin.jasi.roadmemorizer.di.component.ApplicationComponent;
 import com.marcin.jasi.roadmemorizer.di.scope.PerServiceScope;
 import com.marcin.jasi.roadmemorizer.general.common.data.LocationTrackerMediator;
-import com.marcin.jasi.roadmemorizer.receiver.LocationPermissionReceiver;
+import com.marcin.jasi.roadmemorizer.locationTracker.LocationTrackerService;
 
 import dagger.Component;
 
 @Component(dependencies = ApplicationComponent.class)
 @PerServiceScope
-public interface GpsPrermissionReceiverComponent {
+public interface LocationTrackerComponent {
 
-    void inject(LocationPermissionReceiver locationPermissionReceiver);
+    void inject(LocationTrackerService locationTracker);
 
     LocationTrackerMediator gpsTrackerMediator();
 }
