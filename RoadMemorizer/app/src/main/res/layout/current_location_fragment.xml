@@ -1,13 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <fragment
-        android:id="@+id/map_view"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
-        class="com.google.android.gms.maps.SupportMapFragment"
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="viewModel"
+            type="com.marcin.jasi.roadmemorizer.currentLocation.presentation.CurrentLocationViewModel" />
+
+    </data>
+
+    <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-</RelativeLayout>
+        android:layout_height="match_parent">
+
+        <fragment
+            android:id="@+id/map_view"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            class="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/align_map_button_margin"
+            android:background="@color/colorPrimaryDark"
+            android:padding="@dimen/align_map_button_margin"
+            android:text="@string/align_map_button_text"
+            android:textStyle="bold"
+            android:onClick="@{view -> viewModel.onAlignClick()}"
+            android:visibility="@{viewModel.isCameraMoved == true ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent" />
+
+    </android.support.constraint.ConstraintLayout>
+</layout>

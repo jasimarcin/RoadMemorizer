@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">RoadMemorizer</string>
+    <string name="align_map_button_text">ALIGN</string>
 </resources>

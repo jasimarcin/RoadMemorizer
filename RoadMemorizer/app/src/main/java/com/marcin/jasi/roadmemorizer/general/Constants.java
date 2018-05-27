@@ -7,6 +7,6 @@ public class Constants {
 
     // location settings
     public static final int LOCATION_INTERVAL = 1000;
-    public static final float LOCATION_DISTANCE = 10f;
+    public static final float LOCATION_DISTANCE = 25f;
 
 }

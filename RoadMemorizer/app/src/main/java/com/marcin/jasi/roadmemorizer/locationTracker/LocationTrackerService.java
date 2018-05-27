@@ -36,29 +36,24 @@ public class LocationTrackerService extends Service {
     @Inject
     LocationTrackerMediator locationTrackerMediator;
 
-    private LocationListener gpsProviderListener = new LocationListener(new GpsProvider());
-    private LocationListener networkProviderListener = new LocationListener(new NetworkProvider());
+    private LocationListener gpsProviderListener;
+    private LocationListener networkProviderListener;
     private CompositeDisposable disposable = new CompositeDisposable();
     private LocationManager locationManager = null;
 
 
     private class LocationListener implements android.location.LocationListener {
-        private Location location;
         private LocationProviderType provider;
+        private LocationTrackerMediator locationTrackerMediator;
 
-        public LocationListener(LocationProviderType provider) {
+        public LocationListener(LocationProviderType provider, LocationTrackerMediator locationTrackerMediator) {
             this.provider = provider;
-            location = new Location(provider.getName());
-
-            locationTrackerMediator
-                    .getLocationChange()
-                    .onNext(new Pair<>(new LatLng(location.getLatitude(), location.getLongitude()), provider));
+            this.locationTrackerMediator = locationTrackerMediator;
         }
 
         @Override
         public void onLocationChanged(Location location) {
             Log.e(TAG, "onLocationChanged: " + location);
-            this.location.set(location);
 
             locationTrackerMediator
                     .getLocationChange()
@@ -93,6 +88,10 @@ public class LocationTrackerService extends Service {
     @Override
     public void onCreate() {
         initDependencies();
+
+        gpsProviderListener = new LocationListener(new GpsProvider(), locationTrackerMediator);
+        networkProviderListener = new LocationListener(new NetworkProvider(), locationTrackerMediator);
+
         initializeLocationManager();
         tryConnectNetworkProvider();
         tryConnectGPSProvider();
@@ -100,7 +99,8 @@ public class LocationTrackerService extends Service {
     }
 
     private void initDependencies() {
-        DaggerLocationTrackerComponent.builder()
+        DaggerLocationTrackerComponent
+                .builder()
                 .applicationComponent(((Application) getApplication()).getApplicationComponent())
                 .build()
                 .inject(this);

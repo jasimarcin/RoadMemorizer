@@ -4,10 +4,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.location.LocationManager;
+import android.util.Pair;
 
 import com.marcin.jasi.roadmemorizer.Application;
 import com.marcin.jasi.roadmemorizer.di.scope.PerServiceScope;
 import com.marcin.jasi.roadmemorizer.general.common.data.LocationTrackerMediator;
+import com.marcin.jasi.roadmemorizer.general.common.data.entity.GpsProvider;
+import com.marcin.jasi.roadmemorizer.general.common.data.entity.NetworkProvider;
 import com.marcin.jasi.roadmemorizer.receiver.di.DaggerGpsPrermissionReceiverComponent;
 
 import javax.inject.Inject;
@@ -28,8 +31,11 @@ public class LocationPermissionReceiver extends BroadcastReceiver {
             LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
 
             if (locationManager != null) {
-                boolean enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-                locationTrackerMediator.getLocationProviderEnableChange().onNext(enabled);
+                boolean gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+                boolean networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+                locationTrackerMediator.getLocationProviderChange().onNext(new Pair<>(gpsEnabled, new GpsProvider()));
+                locationTrackerMediator.getLocationProviderChange().onNext(new Pair<>(networkEnabled, new NetworkProvider()));
             }
         }
     }
@@ -37,7 +43,7 @@ public class LocationPermissionReceiver extends BroadcastReceiver {
     private void initDependencies(Context context) {
         DaggerGpsPrermissionReceiverComponent
                 .builder()
-                .applicationComponent(((Application)context.getApplicationContext()).getApplicationComponent())
+                .applicationComponent(((Application) context.getApplicationContext()).getApplicationComponent())
                 .build()
                 .inject(this);
     }
