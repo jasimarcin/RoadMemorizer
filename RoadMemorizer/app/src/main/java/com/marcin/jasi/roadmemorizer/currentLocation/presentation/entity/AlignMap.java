@@ -4,9 +4,10 @@ import com.google.android.gms.maps.model.LatLng;
 
 // todo autovalue
 // todo datamapper
-public class AlignMap implements CurrentLocationViewState {
+public class AlignMap extends CurrentLocationViewState {
 
     private LatLng alignPoint;
+
 
     public AlignMap(LatLng alignPoint) {
         this.alignPoint = alignPoint;

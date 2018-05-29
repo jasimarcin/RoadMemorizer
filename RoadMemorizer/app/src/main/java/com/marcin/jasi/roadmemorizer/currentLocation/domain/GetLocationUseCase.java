@@ -1,8 +1,8 @@
 package com.marcin.jasi.roadmemorizer.currentLocation.domain;
 
 import com.google.android.gms.maps.model.LatLng;
-import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.GetLocationEvent;
-import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.LocationResponseData;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.LocationServiceIntent;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.LocationSaverEvent;
 
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
@@ -11,7 +11,7 @@ import timber.log.Timber;
 
 public class GetLocationUseCase {
 
-    private PublishSubject<GetLocationEvent> eventsReceiver = PublishSubject.create();
+    private PublishSubject<LocationServiceIntent> eventsReceiver = PublishSubject.create();
     private GetLocationRepository repository;
 
 
@@ -19,13 +19,12 @@ public class GetLocationUseCase {
         this.repository = repository;
     }
 
-    public void receiveEvent(GetLocationEvent event) {
-
+    private void receiveEvent(LocationServiceIntent event) {
         repository.getLocationEventPublisher()
                 .onNext(event);
     }
 
-    public void callEvent(GetLocationEvent event) {
+    public void callEvent(LocationServiceIntent event) {
         eventsReceiver.onNext(event);
     }
 
@@ -35,7 +34,7 @@ public class GetLocationUseCase {
                 .subscribe(this::receiveEvent, Timber::d);
     }
 
-    public PublishSubject<LocationResponseData> getLocationEmitter() {
+    public PublishSubject<LocationSaverEvent> getLocationEmitter() {
         return repository.getLocationEmitter();
     }
 
@@ -43,8 +42,13 @@ public class GetLocationUseCase {
         return repository.getLastLocation();
     }
 
-    public LocationResponseData getLastResponse() {
+    public LocationSaverEvent getLastResponse() {
         return repository.getLastResponse();
+    }
+
+
+    public boolean isSavingRoad() {
+        return repository.isRecordingRoad();
     }
 
 }

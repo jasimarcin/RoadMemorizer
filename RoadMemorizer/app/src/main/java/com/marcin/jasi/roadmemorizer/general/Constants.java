@@ -11,4 +11,6 @@ public class Constants {
     public static final boolean ENABLE_NETWORK_PROVIDER = false;
 
     public static final int REQUEST_CODE_ASK_PERMISSION = 123;
+
+    public static final String CURRENT_LOCATION_FRAGMENT_TITLE = "Aktualna lokalizacja";
 }

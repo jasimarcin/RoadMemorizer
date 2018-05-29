@@ -2,22 +2,22 @@ package com.marcin.jasi.roadmemorizer.currentLocation.data;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.GetLocationRepository;
-import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.GetLocationEvent;
-import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.LocationResponseData;
-import com.marcin.jasi.roadmemorizer.locationTracker.data.LocationTrackerServiceDataSource;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.LocationServiceIntent;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.LocationSaverEvent;
+import com.marcin.jasi.roadmemorizer.locationTracker.data.LocationSaverServiceDataSource;
 
 import io.reactivex.subjects.PublishSubject;
 
 public class GetLocationRepositoryImpl implements GetLocationRepository {
 
-    private LocationTrackerServiceDataSource dataSource;
+    private LocationSaverServiceDataSource dataSource;
 
-    public GetLocationRepositoryImpl(LocationTrackerServiceDataSource dataSource) {
+    public GetLocationRepositoryImpl(LocationSaverServiceDataSource dataSource) {
         this.dataSource = dataSource;
     }
 
     @Override
-    public LocationResponseData getLastResponse() {
+    public LocationSaverEvent getLastResponse() {
         return dataSource.getLastLocationData();
     }
 
@@ -27,13 +27,17 @@ public class GetLocationRepositoryImpl implements GetLocationRepository {
     }
 
     @Override
-    public PublishSubject<LocationResponseData> getLocationEmitter() {
-        return dataSource.getLocationResponsePublisher();
+    public PublishSubject<LocationSaverEvent> getLocationEmitter() {
+        return dataSource.getLocationSaverPublisher();
     }
 
     @Override
-    public PublishSubject<GetLocationEvent> getLocationEventPublisher() {
+    public PublishSubject<LocationServiceIntent> getLocationEventPublisher() {
         return dataSource.getEventsPublisher();
     }
 
+    @Override
+    public boolean isRecordingRoad() {
+        return dataSource.getIsRecordingRoad();
+    }
 }

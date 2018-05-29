@@ -1,15 +1,18 @@
 package com.marcin.jasi.roadmemorizer.currentLocation.presentation;
 
 import android.arch.lifecycle.ViewModel;
-import android.databinding.ObservableBoolean;
 
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.GetLocationUseCase;
-import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.GetLocationEvent;
-import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.LocationResponseData;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.AlignClickIntent;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.LocationServiceIntent;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.MoveCameraIntent;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.GenerateScreenshot;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.LocationSaverEvent;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.PointData;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.PointsData;
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.AlignMap;
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.CurrentLocationViewState;
+import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.GenerateScreenshotViewState;
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.IdleViewState;
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.UpdatePointViewState;
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.UpdateRoadViewState;
@@ -28,52 +31,70 @@ public class CurrentLocationViewModel extends ViewModel {
 
     private CompositeDisposable disposable = new CompositeDisposable();
     private PublishSubject<CurrentLocationViewState> viewStatePublisher = PublishSubject.create();
-    private ObservableBoolean cameraMoved = new ObservableBoolean(false);
+    private boolean cameraMoved = false;
+
 
     @Inject
     public CurrentLocationViewModel() {
-    }
-
-    public void callEvent(GetLocationEvent event) {
-        getLocationUseCase.callEvent(event);
-    }
-
-    public ObservableBoolean isCameraMoved() {
-        return cameraMoved;
-    }
-
-    public void setCameraMoved(boolean cameraMoved) {
-        this.cameraMoved.set(cameraMoved);
-    }
-
-    public void onAlignClick() {
-        this.cameraMoved.set(false);
-        viewStatePublisher.onNext(new AlignMap(getLocationUseCase.getLastLocation()));
-    }
-
-    private Observable<LocationResponseData> getNewLocationObservable() {
-        return getLocationUseCase
-                .getLocationEmitter();
-    }
-
-    public Observable<CurrentLocationViewState> getMapEvents() {
-        return viewStatePublisher;
     }
 
     public void init() {
         if (disposable != null)
             disposable.dispose();
 
-        disposable = new CompositeDisposable();
         disposable.add(getNewLocationObservable()
-                .subscribe(locationEvent -> viewStatePublisher.onNext(dataMapperMethod(locationEvent))));
+                .subscribe(locationEvent -> publishWrappedViewState(dataMapperMethod(locationEvent))));
 
         disposable.add(getLocationUseCase.connectEventsReceiver());
     }
 
-    private CurrentLocationViewState dataMapperMethod(LocationResponseData locationEvent) {
+    private Observable<LocationSaverEvent> getNewLocationObservable() {
+        return getLocationUseCase.getLocationEmitter();
+    }
+
+    public void callEvent(LocationServiceIntent event) {
+
+        if (event instanceof MoveCameraIntent)
+            handleMoveCameraEvent();
+        else if (event instanceof AlignClickIntent)
+            handleAlignClick();
+        getLocationUseCase.callEvent(event);
+    }
+
+    private void handleMoveCameraEvent() {
+        if (gotLastLocation()) {
+
+            CurrentLocationViewState viewState = getLastState();
+            viewState.setShowAligmButton(true);
+
+            publishWrappedViewState(viewState);
+            cameraMoved = true;
+        }
+    }
+
+    private void handleAlignClick() {
+        this.cameraMoved = false;
+        publishWrappedViewState(new AlignMap(getLocationUseCase.getLastLocation()));
+    }
+
+    private void publishWrappedViewState(CurrentLocationViewState viewState) {
+        viewStatePublisher.onNext(wrapButtonsStats(viewState));
+    }
+
+    private CurrentLocationViewState dataMapperMethod(LocationSaverEvent locationEvent) {
+        if (locationEvent instanceof GenerateScreenshot) {
+            return new GenerateScreenshotViewState(
+                    ((PointsData) locationEvent).getPoints(),
+                    ((PointsData) locationEvent).getStartLocation(),
+                    ((PointsData) locationEvent).getEndLocation(),
+                    canAlignMap(),
+                    ((GenerateScreenshot) locationEvent).getScreenshotFileName());
+        }
+
         if (locationEvent instanceof PointData) {
-            return new UpdatePointViewState(((PointData) locationEvent).getPoint(), shouldAlign());
+            return new UpdatePointViewState(
+                    ((PointData) locationEvent).getPoint(),
+                    canAlignMap());
         }
 
         if (locationEvent instanceof PointsData) {
@@ -81,18 +102,39 @@ public class CurrentLocationViewModel extends ViewModel {
                     ((PointsData) locationEvent).getPoints(),
                     ((PointsData) locationEvent).getStartLocation(),
                     ((PointsData) locationEvent).getEndLocation(),
-                    shouldAlign());
+                    canAlignMap());
         }
 
         return new IdleViewState();
     }
 
-    private boolean shouldAlign() {
-        return !cameraMoved.get();
+    private boolean canAlignMap() {
+        return !cameraMoved;
     }
 
     public CurrentLocationViewState getLastState() {
-        return dataMapperMethod(getLocationUseCase.getLastResponse());
+        return wrapButtonsStats(dataMapperMethod(getLocationUseCase.getLastResponse()));
+    }
+
+    private CurrentLocationViewState wrapButtonsStats(CurrentLocationViewState viewState) {
+        viewState.setShowAligmButton(cameraMoved);
+
+        viewState.setShowSaveButton(validateIfShowSaveButton());
+        viewState.setShowStopSaveingButton(validateIfShowStopSavingButton());
+
+        return viewState;
+    }
+
+    private boolean validateIfShowStopSavingButton() {
+        return getLocationUseCase.getLastLocation() != null && !getLocationUseCase.isSavingRoad();
+    }
+
+    private boolean validateIfShowSaveButton() {
+        return getLocationUseCase.getLastLocation() != null && getLocationUseCase.isSavingRoad();
+    }
+
+    public Observable<CurrentLocationViewState> getMapEvents() {
+        return viewStatePublisher;
     }
 
     public boolean gotLastLocation() {

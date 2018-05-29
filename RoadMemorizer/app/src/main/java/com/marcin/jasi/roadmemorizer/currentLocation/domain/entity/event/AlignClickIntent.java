@@ -1,4 +1,4 @@
 package com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event;
 
-public class GetCurrentEvent implements GetLocationEvent {
+public class AlignClickIntent implements LocationServiceIntent {
 }

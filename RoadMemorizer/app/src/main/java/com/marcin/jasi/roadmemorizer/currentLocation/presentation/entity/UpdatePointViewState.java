@@ -4,7 +4,7 @@ import com.google.android.gms.maps.model.LatLng;
 
 // todo autovalue
 // todo datamapper
-public class UpdatePointViewState implements CurrentLocationViewState{
+public class UpdatePointViewState extends CurrentLocationViewState {
 
     private LatLng point;
     private boolean align;

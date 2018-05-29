@@ -1,28 +1,28 @@
 package com.marcin.jasi.roadmemorizer.locationTracker.data;
 
 import com.google.android.gms.maps.model.LatLng;
-import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.GetLocationEvent;
-import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.LocationResponseData;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.LocationServiceIntent;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.LocationSaverEvent;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.reactivex.subjects.PublishSubject;
 
-public class LocationTrackerServiceDataSource {
+public class LocationSaverServiceDataSource {
 
-    private AtomicReference<LocationResponseData> lastLocationData = new AtomicReference<>(null);
+    private AtomicReference<LocationSaverEvent> lastLocationData = new AtomicReference<>(null);
     private AtomicReference<LatLng> lastLocationDirections = new AtomicReference<>(null);
-    private PublishSubject<LocationResponseData> locationResponsePublisher = PublishSubject.create();
-    private PublishSubject<GetLocationEvent> eventsPublisher = PublishSubject.create();
+    private PublishSubject<LocationSaverEvent> locationSaverPublisher = PublishSubject.create();
+    private PublishSubject<LocationServiceIntent> eventsPublisher = PublishSubject.create();
     private AtomicBoolean isRecorderRoad = new AtomicBoolean(false);
 
 
-    public LocationResponseData getLastLocationData() {
+    public LocationSaverEvent getLastLocationData() {
         return lastLocationData.get();
     }
 
-    public void setLastLocationData(LocationResponseData lastLocationData) {
+    public void setLastLocationData(LocationSaverEvent lastLocationData) {
         this.lastLocationData.set(lastLocationData);
     }
 
@@ -34,11 +34,11 @@ public class LocationTrackerServiceDataSource {
         this.lastLocationDirections.set(lastLocationDirections);
     }
 
-    public PublishSubject<LocationResponseData> getLocationResponsePublisher() {
-        return locationResponsePublisher;
+    public PublishSubject<LocationSaverEvent> getLocationSaverPublisher() {
+        return locationSaverPublisher;
     }
 
-    public boolean getIsRecorderRoad() {
+    public boolean getIsRecordingRoad() {
         return isRecorderRoad.get();
     }
 
@@ -46,7 +46,7 @@ public class LocationTrackerServiceDataSource {
         this.isRecorderRoad.set(isRecorderRoad);
     }
 
-    public PublishSubject<GetLocationEvent> getEventsPublisher() {
+    public PublishSubject<LocationServiceIntent> getEventsPublisher() {
         return eventsPublisher;
     }
 }

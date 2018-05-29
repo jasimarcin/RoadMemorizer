@@ -10,13 +10,15 @@ import android.util.Pair;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.marcin.jasi.roadmemorizer.Application;
-import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.GetCurrentEvent;
-import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.GetLocationEvent;
-import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.StartSavingRoad;
-import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.StopSavingRoad;
-import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.UnconnectReceiverEvent;
-import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.LocationResponseData;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.CurrentLocationIntent;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.LocationServiceIntent;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.SavingButtonClickIntent;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.ScreenshotGeneratedIntent;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.UnconnectReceiverIntent;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.GenerateScreenshot;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.LocationSaverEvent;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.PointData;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.PointsData;
 import com.marcin.jasi.roadmemorizer.di.scope.PerServiceScope;
 import com.marcin.jasi.roadmemorizer.general.common.data.LocationProviderListener;
 import com.marcin.jasi.roadmemorizer.general.common.data.LocationProvidersHelper;
@@ -24,16 +26,17 @@ import com.marcin.jasi.roadmemorizer.general.common.data.LocationTrackerMediator
 import com.marcin.jasi.roadmemorizer.general.common.data.entity.GpsProvider;
 import com.marcin.jasi.roadmemorizer.general.common.data.entity.LocationProviderType;
 import com.marcin.jasi.roadmemorizer.general.common.data.entity.NetworkProvider;
-import com.marcin.jasi.roadmemorizer.locationTracker.data.LocationTrackerServiceDataSource;
+import com.marcin.jasi.roadmemorizer.locationTracker.data.LocationSaverServiceDataSource;
 import com.marcin.jasi.roadmemorizer.locationTracker.di.DaggerLocationTrackerComponent;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.annotations.SchedulerSupport;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
 import static com.marcin.jasi.roadmemorizer.general.Constants.ENABLE_NETWORK_PROVIDER;
@@ -41,18 +44,17 @@ import static com.marcin.jasi.roadmemorizer.general.Constants.ENABLE_NETWORK_PRO
 @PerServiceScope
 public class LocationTrackerService extends Service {
 
-    private static final String TAG = "LocationTrackerService";
-
     @Inject
     LocationTrackerMediator locationTrackerMediator;
     @Inject
-    LocationTrackerServiceDataSource dataSource;
+    LocationSaverServiceDataSource dataSource;
     @Inject
     LocationProvidersHelper locationProvidersHelper;
 
     private LocationProviderListener gpsProviderListener;
     private LocationProviderListener networkProviderListener;
     private CompositeDisposable disposable = new CompositeDisposable();
+    private List<LatLng> pointsList = new ArrayList<>();
 
 
     @Override
@@ -82,34 +84,6 @@ public class LocationTrackerService extends Service {
                 .subscribe(this::handleEvents, Timber::d));
     }
 
-    private void handleEvents(GetLocationEvent event) {
-        Timber.e("got event" + event.getClass().getName());
-
-        if (event instanceof StartSavingRoad) {
-            if (dataSource.getLastLocationDirections() == null)
-                return;
-
-            dataSource.setIsRecorderRoad(true);
-        }
-
-        if (event instanceof StopSavingRoad) {
-            dataSource.setIsRecorderRoad(false);
-        }
-
-        if (event instanceof GetCurrentEvent && !dataSource.getIsRecorderRoad()) {
-            startProviders();
-        }
-
-        if (event instanceof UnconnectReceiverEvent && !dataSource.getIsRecorderRoad()) {
-            stopProviders();
-        }
-    }
-
-    private void startProviders() {
-        locationProvidersHelper.tryConnectProvider(LocationManager.NETWORK_PROVIDER, networkProviderListener);
-        locationProvidersHelper.tryConnectProvider(LocationManager.GPS_PROVIDER, gpsProviderListener);
-    }
-
     private void initDependencies() {
         DaggerLocationTrackerComponent
                 .builder()
@@ -123,23 +97,89 @@ public class LocationTrackerService extends Service {
         return new LocationProviderListener(type, LocationTrackerService.this::handleLocationChange);
     }
 
+    private void handleEvents(LocationServiceIntent event) {
+        if (event instanceof SavingButtonClickIntent) {
+            if (!dataSource.getIsRecordingRoad()) {
+                if (dataSource.getLastLocationDirections() == null)
+                    return;
+
+                dataSource.setIsRecorderRoad(true);
+                dataSource.getLocationSaverPublisher()
+                        .onNext(dataSource.getLastLocationData());
+            } else {
+                // save db
+//                int roadId = db.saveList(list);
+                String filename = "filename";
+                dataSource.getLocationSaverPublisher()
+                        .onNext(new GenerateScreenshot(pointsList.get(0),
+                                pointsList.get(pointsList.size() - 1), pointsList,
+                                filename));
+            }
+        }
+
+        if (event instanceof ScreenshotGeneratedIntent) {
+            pointsList = new ArrayList<>();
+            dataSource.setIsRecorderRoad(false);
+            dataSource.getLocationSaverPublisher()
+                    .onNext(dataSource.getLastLocationData());
+        }
+
+        if (event instanceof CurrentLocationIntent && !dataSource.getIsRecordingRoad()) {
+            startProviders();
+        }
+
+        if (event instanceof UnconnectReceiverIntent && !dataSource.getIsRecordingRoad()) {
+            stopProviders();
+        }
+    }
+
+    private void startProviders() {
+        locationProvidersHelper.tryConnectProvider(LocationManager.NETWORK_PROVIDER, networkProviderListener);
+        locationProvidersHelper.tryConnectProvider(LocationManager.GPS_PROVIDER, gpsProviderListener);
+    }
+
+    private void stopProviders() {
+        locationProvidersHelper.setProviderState(false, LocationManager.GPS_PROVIDER, gpsProviderListener);
+        locationProvidersHelper.setProviderState(false, LocationManager.NETWORK_PROVIDER, networkProviderListener);
+    }
+
     private void handleLocationChange(Location location, LocationProviderType provider) {
-        Timber.i("onLocationChanged: " + location);
+        Timber.i("onLocationChanged: %s", location);
 
         if (!ENABLE_NETWORK_PROVIDER && provider instanceof NetworkProvider)
             return;
 
-        if (dataSource.getIsRecorderRoad()) {
-
+        if (dataSource.getIsRecordingRoad()) {
+            handleRecordingLocationChange(location);
         } else {
-            LatLng locationDirections = new LatLng(location.getLatitude(), location.getLongitude());
-            LocationResponseData locationResponseData = new PointData(locationDirections);
-
-            dataSource.setLastLocationData(locationResponseData);
-            dataSource.setLastLocationDirections(locationDirections);
-            dataSource.getLocationResponsePublisher()
-                    .onNext(locationResponseData);
+            handleCurrentLocationChange(location);
         }
+    }
+
+    private void handleRecordingLocationChange(Location location) {
+        LatLng locationDirections = new LatLng(location.getLatitude(), location.getLongitude());
+        pointsList.add(locationDirections);
+
+        LocationSaverEvent locationSaverEvent = new PointsData(
+                pointsList.get(0),
+                locationDirections,
+                pointsList);
+
+        updateNewLocation(locationDirections, locationSaverEvent);
+    }
+
+    private void handleCurrentLocationChange(Location location) {
+        LatLng locationDirections = new LatLng(location.getLatitude(), location.getLongitude());
+        LocationSaverEvent locationSaverEvent = new PointData(locationDirections);
+
+        updateNewLocation(locationDirections, locationSaverEvent);
+    }
+
+    private void updateNewLocation(LatLng locationDirections, LocationSaverEvent locationSaverEvent) {
+        dataSource.setLastLocationData(locationSaverEvent);
+        dataSource.setLastLocationDirections(locationDirections);
+        dataSource.getLocationSaverPublisher()
+                .onNext(locationSaverEvent);
     }
 
     private Disposable handleProvidersStateChange() {
@@ -162,11 +202,6 @@ public class LocationTrackerService extends Service {
         stopProviders();
 
         super.onDestroy();
-    }
-
-    private void stopProviders() {
-        locationProvidersHelper.setProviderState(false, LocationManager.GPS_PROVIDER, gpsProviderListener);
-        locationProvidersHelper.setProviderState(false, LocationManager.NETWORK_PROVIDER, networkProviderListener);
     }
 
 }

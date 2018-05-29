@@ -8,7 +8,7 @@ import java.util.List;
 
 // todo autovalue
 // todo datamapper
-public class UpdateRoadViewState implements CurrentLocationViewState {
+public class UpdateRoadViewState extends CurrentLocationViewState {
 
     private List<LatLng> road;
     private LatLng startPoint;

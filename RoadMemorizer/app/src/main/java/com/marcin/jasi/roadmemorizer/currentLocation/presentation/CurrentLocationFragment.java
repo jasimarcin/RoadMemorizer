@@ -15,6 +15,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
@@ -22,10 +23,15 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.marcin.jasi.roadmemorizer.Application;
 import com.marcin.jasi.roadmemorizer.R;
 import com.marcin.jasi.roadmemorizer.currentLocation.di.DaggerCurrentLocationComponent;
-import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.GetCurrentEvent;
-import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.UnconnectReceiverEvent;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.AlignClickIntent;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.CurrentLocationIntent;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.MoveCameraIntent;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.SavingButtonClickIntent;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.ScreenshotGeneratedIntent;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.UnconnectReceiverIntent;
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.AlignMap;
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.CurrentLocationViewState;
+import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.GenerateScreenshotViewState;
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.UpdatePointViewState;
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.UpdateRoadViewState;
 import com.marcin.jasi.roadmemorizer.databinding.CurrentLocationFragmentBinding;
@@ -39,17 +45,18 @@ import javax.inject.Inject;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
+
+import static com.marcin.jasi.roadmemorizer.general.Constants.CURRENT_LOCATION_FRAGMENT_TITLE;
 
 
 // todo big refactor
-// todo start / stop recording
 // todo after recording screenshot
 
 @PerFragment
 public class CurrentLocationFragment extends CommonFragment {
 
-    public static final String TITLE = "Aktualna lokalizacja";
+    public static final String TITLE = CURRENT_LOCATION_FRAGMENT_TITLE;
+    public static final float ZOOM = 15.0f;
 
     @Inject
     ViewModelProvider.Factory viewModelProvider;
@@ -70,7 +77,9 @@ public class CurrentLocationFragment extends CommonFragment {
                              @Nullable Bundle savedInstanceState) {
 
 
-        binding = DataBindingUtil.inflate(getLayoutInflater(), R.layout.current_location_fragment, container, false);
+        binding = DataBindingUtil.inflate(getLayoutInflater(), R.layout.current_location_fragment,
+                container, false);
+
         return binding.getRoot();
     }
 
@@ -84,14 +93,8 @@ public class CurrentLocationFragment extends CommonFragment {
                 .of(this, viewModelProvider)
                 .get(CurrentLocationViewModel.class);
 
-        supportMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map_view);
-        supportMapFragment.getMapAsync(googleMap -> googleMap.setOnCameraMoveStartedListener(reason -> {
-            if (reason == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE
-                    && viewModel.gotLastLocation()) {
-                viewModel.setCameraMoved(true);
-            }
-        }));
-        binding.setViewModel(viewModel);
+        setupMapFragment();
+        addButtonsCallbacks();
     }
 
     private void initDependencies() {
@@ -100,6 +103,27 @@ public class CurrentLocationFragment extends CommonFragment {
                 .applicationComponent(((Application) getActivity().getApplication()).getApplicationComponent())
                 .build()
                 .inject(this);
+    }
+
+    private void setupMapFragment() {
+        supportMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map_view);
+        supportMapFragment.getMapAsync(googleMap -> googleMap.setOnCameraMoveStartedListener(reason -> {
+            if (reason == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE) {
+                viewModel.callEvent(new MoveCameraIntent());
+            }
+        }));
+    }
+
+    private void addButtonsCallbacks() {
+        binding.alignButton.setOnClickListener(v -> viewModel.callEvent(new AlignClickIntent()));
+        binding.saveButton.setOnClickListener(v -> viewModel.callEvent(new SavingButtonClickIntent()));
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        viewModel.init();
+        disposable.add(handleMapEvents());
     }
 
     @NonNull
@@ -111,6 +135,29 @@ public class CurrentLocationFragment extends CommonFragment {
 
     private void render(CurrentLocationViewState event) {
 
+        if (event instanceof GenerateScreenshotViewState) {
+
+            supportMapFragment.getMapAsync(googleMap -> {
+
+                LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
+                for (LatLng point : ((GenerateScreenshotViewState) event).getRoad())
+                    boundsBuilder.include(point);
+
+                int routePadding = 100;
+
+                LatLngBounds bounds = boundsBuilder.build();
+
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, routePadding));
+                googleMap.snapshot(bitmap -> {
+
+                    viewModel.callEvent(new ScreenshotGeneratedIntent(((GenerateScreenshotViewState) event).getScreenshotFileName()));
+
+                });
+            });
+
+            return;
+        }
+
         if (event instanceof UpdateRoadViewState) {
             updateRoadMapView(((UpdateRoadViewState) event));
         } else if (event instanceof UpdatePointViewState) {
@@ -118,18 +165,66 @@ public class CurrentLocationFragment extends CommonFragment {
         } else if (event instanceof AlignMap) {
             alignCameraToLocation(((AlignMap) event).getAlignPoint());
         }
+
+        updateAlignButton(event);
+        updateSavingButton(event);
     }
 
     private void updateRoadMapView(UpdateRoadViewState pointViewState) {
         supportMapFragment.getMapAsync((GoogleMap googleMap) -> {
-            setStartMarker(googleMap, pointViewState.getStartPoint());
             setEndPoint(googleMap, pointViewState.getEndPoint());
+            setStartMarker(googleMap, pointViewState.getStartPoint());
             setPolyline(googleMap, pointViewState.getRoad());
 
             if (pointViewState.isAlign()) {
                 alignCameraToLocation(pointViewState.getEndPoint());
             }
         });
+    }
+
+    private void updatePointMapView(UpdatePointViewState pointViewState) {
+        supportMapFragment.getMapAsync((GoogleMap googleMap) -> {
+
+            setStartMarker(googleMap, pointViewState.getPoint());
+
+            if (endMarker != null)
+                endMarker.setVisible(false);
+
+            if (polyline != null)
+                polyline.setVisible(false);
+
+            if (pointViewState.isAlign()) {
+                alignCameraToLocation(pointViewState.getPoint());
+            }
+        });
+    }
+
+    private void updateSavingButton(CurrentLocationViewState event) {
+        if (event.isShowSaveButton()) {
+            binding.saveButton.setVisibility(View.VISIBLE);
+            binding.saveButton.setText(getString(R.string.save_button_text));
+        } else if (event.isShowStopSavingButton()) {
+            binding.saveButton.setVisibility(View.VISIBLE);
+            binding.saveButton.setText(getString(R.string.start_saving_button_text));
+        } else
+            binding.saveButton.setVisibility(View.GONE);
+    }
+
+    private void alignCameraToLocation(LatLng location) {
+        if (location == null)
+            return;
+
+        supportMapFragment.getMapAsync(googleMap -> {
+            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, ZOOM));
+        });
+    }
+
+    private void updateAlignButton(CurrentLocationViewState event) {
+        if (event.isShowAligmButton()) {
+            binding.alignButton.setVisibility(View.VISIBLE);
+        } else {
+            binding.alignButton.setVisibility(View.GONE);
+        }
     }
 
     private void setPolyline(GoogleMap googleMap, List<LatLng> points) {
@@ -161,32 +256,6 @@ public class CurrentLocationFragment extends CommonFragment {
         }
     }
 
-    private void updatePointMapView(UpdatePointViewState pointViewState) {
-        supportMapFragment.getMapAsync((GoogleMap googleMap) -> {
-
-            setStartMarker(googleMap, pointViewState.getPoint());
-
-            if (endMarker != null)
-                endMarker.setVisible(false);
-
-            if (polyline != null)
-                polyline.setVisible(false);
-
-            if (pointViewState.isAlign()) {
-                alignCameraToLocation(pointViewState.getPoint());
-            }
-        });
-    }
-
-    private void alignCameraToLocation(LatLng location) {
-        if (location == null)
-            return;
-
-        supportMapFragment.getMapAsync(googleMap -> {
-            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 15.0f));
-        });
-    }
-
     @Override
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
@@ -200,29 +269,23 @@ public class CurrentLocationFragment extends CommonFragment {
         return TITLE;
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        viewModel.init();
-        disposable.add(handleMapEvents());
-    }
 
     @Override
-    public void onStop() {
+    public void onDestroy() {
         viewModel.dispose();
         disposable.dispose();
-        super.onStop();
+        super.onDestroy();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        viewModel.callEvent(new GetCurrentEvent());
+        viewModel.callEvent(new CurrentLocationIntent());
     }
 
     @Override
     public void onPause() {
-        viewModel.callEvent(new UnconnectReceiverEvent());
+        viewModel.callEvent(new UnconnectReceiverIntent());
         super.onPause();
     }
 

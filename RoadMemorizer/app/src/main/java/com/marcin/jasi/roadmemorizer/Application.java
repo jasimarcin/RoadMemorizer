@@ -39,15 +39,6 @@ public class Application extends android.app.Application {
         Timber.plant(new Timber.DebugTree());
         initDependencies();
 
-        disposable.add(
-                applicationComponent.gpsTrackerMediator()
-                        .getLocationProviderChange()
-                        .subscribe(newItem -> {
-                            Timber.d(String.format("GPS ENABLE = %s %s", newItem.first,
-                                    newItem.second.getClass().getName()));
-                        })
-        );
-
         startService(new Intent(this, LocationTrackerService.class));
         bindService(new Intent(this, LocationTrackerService.class), serviceConnection, Context.BIND_AUTO_CREATE);
     }

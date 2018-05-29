@@ -13,7 +13,7 @@ import com.marcin.jasi.roadmemorizer.di.scope.PerAppScope;
 import com.marcin.jasi.roadmemorizer.general.Constants;
 import com.marcin.jasi.roadmemorizer.general.common.data.LocationProvidersHelper;
 import com.marcin.jasi.roadmemorizer.general.common.data.LocationTrackerMediator;
-import com.marcin.jasi.roadmemorizer.locationTracker.data.LocationTrackerServiceDataSource;
+import com.marcin.jasi.roadmemorizer.locationTracker.data.LocationSaverServiceDataSource;
 
 import dagger.Module;
 import dagger.Provides;
@@ -54,14 +54,14 @@ public class ApplicationModule {
 
     @Provides
     @PerAppScope
-    GetLocationRepository provideGetLocationRepository(LocationTrackerServiceDataSource dataSource) {
+    GetLocationRepository provideGetLocationRepository(LocationSaverServiceDataSource dataSource) {
         return new GetLocationRepositoryImpl(dataSource);
     }
 
     @Provides
     @PerAppScope
-    LocationTrackerServiceDataSource provideLocationTrackerServiceDataSource() {
-        return new LocationTrackerServiceDataSource();
+    LocationSaverServiceDataSource provideLocationTrackerServiceDataSource() {
+        return new LocationSaverServiceDataSource();
     }
 
     @Provides

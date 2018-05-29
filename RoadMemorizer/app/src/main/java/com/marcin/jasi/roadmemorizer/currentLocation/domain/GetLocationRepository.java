@@ -1,19 +1,21 @@
 package com.marcin.jasi.roadmemorizer.currentLocation.domain;
 
 import com.google.android.gms.maps.model.LatLng;
-import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.GetLocationEvent;
-import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.LocationResponseData;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.LocationServiceIntent;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.LocationSaverEvent;
 
 import io.reactivex.subjects.PublishSubject;
 
 public interface GetLocationRepository {
 
-    LocationResponseData getLastResponse();
+    LocationSaverEvent getLastResponse();
 
     LatLng getLastLocation();
 
-    PublishSubject<LocationResponseData> getLocationEmitter();
+    PublishSubject<LocationSaverEvent> getLocationEmitter();
 
-    PublishSubject<GetLocationEvent> getLocationEventPublisher();
+    PublishSubject<LocationServiceIntent> getLocationEventPublisher();
+
+    boolean isRecordingRoad();
 
 }

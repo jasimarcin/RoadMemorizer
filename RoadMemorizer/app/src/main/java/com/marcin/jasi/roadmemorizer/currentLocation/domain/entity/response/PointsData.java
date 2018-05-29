@@ -5,7 +5,7 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.List;
 
 // todo autoValue
-public class PointsData implements LocationResponseData {
+public class PointsData implements LocationSaverEvent {
 
     private LatLng startLocation;
     private LatLng endLocation;
