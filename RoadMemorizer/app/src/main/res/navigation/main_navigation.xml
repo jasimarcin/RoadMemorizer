@@ -6,7 +6,7 @@
 
     <fragment
         android:id="@+id/currentLocationFragment"
-        android:name="com.marcin.jasi.roadmemorizer.currentLocation.CurrentLocationFragment"
+        android:name="com.marcin.jasi.roadmemorizer.currentLocation.presentation.CurrentLocationFragment"
         android:label="current_location_fragment"
         tools:layout="@layout/current_location_fragment"></fragment>
 

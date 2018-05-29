@@ -2,13 +2,17 @@ package com.marcin.jasi.roadmemorizer.currentLocation.presentation;
 
 import android.arch.lifecycle.ViewModel;
 import android.databinding.ObservableBoolean;
-import android.util.Pair;
 
-import com.google.android.gms.maps.model.LatLng;
-import com.marcin.jasi.roadmemorizer.general.common.data.LocationTrackerMediator;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.GetLocationUseCase;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.GetLocationEvent;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.LocationResponseData;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.PointData;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.PointsData;
+import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.AlignMap;
+import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.CurrentLocationViewState;
+import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.IdleViewState;
+import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.UpdatePointViewState;
+import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.UpdateRoadViewState;
 
 import javax.inject.Inject;
 
@@ -20,23 +24,18 @@ import io.reactivex.subjects.PublishSubject;
 public class CurrentLocationViewModel extends ViewModel {
 
     @Inject
-    LocationTrackerMediator locationTrackerMediator;
+    GetLocationUseCase getLocationUseCase;
 
     private CompositeDisposable disposable = new CompositeDisposable();
-    private List<LatLng> roadPoints = new ArrayList<>();
-    private ObservableBoolean cameraMoved = new ObservableBoolean(false);
     private PublishSubject<CurrentLocationViewState> viewStatePublisher = PublishSubject.create();
+    private ObservableBoolean cameraMoved = new ObservableBoolean(false);
 
     @Inject
     public CurrentLocationViewModel() {
     }
 
-    public List<LatLng> getRoadPoints() {
-        return roadPoints;
-    }
-
-    public void setRoadPoints(List<LatLng> roadPoints) {
-        this.roadPoints = roadPoints;
+    public void callEvent(GetLocationEvent event) {
+        getLocationUseCase.callEvent(event);
     }
 
     public ObservableBoolean isCameraMoved() {
@@ -49,33 +48,59 @@ public class CurrentLocationViewModel extends ViewModel {
 
     public void onAlignClick() {
         this.cameraMoved.set(false);
-        viewStatePublisher.onNext(new AlignMap());
+        viewStatePublisher.onNext(new AlignMap(getLocationUseCase.getLastLocation()));
     }
 
-    public LatLng getLastPoint() {
-        if (roadPoints != null && roadPoints.size() > 0)
-            return roadPoints.get(roadPoints.size() - 1);
-        else
-            return null;
-    }
-
-    private Observable<Pair<LatLng, List<LatLng>>> getNewLocationObservable() {
-        return locationTrackerMediator
-                .getLocationChange()
-//                .filter(newLocation -> newLocation.second instanceof GpsProvider)
-                .map(newLocation -> newLocation.first)
-                .map(newLocation -> {
-                    roadPoints.add(newLocation);
-                    return new Pair<>(newLocation, roadPoints);
-                });
+    private Observable<LocationResponseData> getNewLocationObservable() {
+        return getLocationUseCase
+                .getLocationEmitter();
     }
 
     public Observable<CurrentLocationViewState> getMapEvents() {
         return viewStatePublisher;
     }
 
-    public void connect() {
+    public void init() {
+        if (disposable != null)
+            disposable.dispose();
+
+        disposable = new CompositeDisposable();
         disposable.add(getNewLocationObservable()
-                .subscribe(location -> viewStatePublisher.onNext(new UpdateLocation(location))));
+                .subscribe(locationEvent -> viewStatePublisher.onNext(dataMapperMethod(locationEvent))));
+
+        disposable.add(getLocationUseCase.connectEventsReceiver());
     }
+
+    private CurrentLocationViewState dataMapperMethod(LocationResponseData locationEvent) {
+        if (locationEvent instanceof PointData) {
+            return new UpdatePointViewState(((PointData) locationEvent).getPoint(), shouldAlign());
+        }
+
+        if (locationEvent instanceof PointsData) {
+            return new UpdateRoadViewState(
+                    ((PointsData) locationEvent).getPoints(),
+                    ((PointsData) locationEvent).getStartLocation(),
+                    ((PointsData) locationEvent).getEndLocation(),
+                    shouldAlign());
+        }
+
+        return new IdleViewState();
+    }
+
+    private boolean shouldAlign() {
+        return !cameraMoved.get();
+    }
+
+    public CurrentLocationViewState getLastState() {
+        return dataMapperMethod(getLocationUseCase.getLastResponse());
+    }
+
+    public boolean gotLastLocation() {
+        return getLocationUseCase.getLastLocation() != null;
+    }
+
+    public void dispose() {
+        disposable.dispose();
+    }
+
 }

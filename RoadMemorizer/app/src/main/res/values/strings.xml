@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">RoadMemorizer</string>
-    <string name="align_map_button_text">ALIGN</string>
+    <string name="align_map_button_text">WYRÓWNAJ</string>
+    <string name="localizationPermission">Uprawnienia do lokalizacji urzadzenia są niezbędne do pracy aplikacji</string>
 </resources>

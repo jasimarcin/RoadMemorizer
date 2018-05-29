@@ -1,54 +1,71 @@
 package com.marcin.jasi.roadmemorizer.main;
 
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
-import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.Toast;
 
+import com.marcin.jasi.roadmemorizer.Application;
 import com.marcin.jasi.roadmemorizer.R;
-import com.marcin.jasi.roadmemorizer.currentLocation.CurrentLocationFragment;
+import com.marcin.jasi.roadmemorizer.currentLocation.presentation.CurrentLocationFragment;
 import com.marcin.jasi.roadmemorizer.databinding.MainActivityBinding;
+import com.marcin.jasi.roadmemorizer.di.scope.PerActivityScope;
+import com.marcin.jasi.roadmemorizer.general.common.data.LocationTrackerMediator;
+import com.marcin.jasi.roadmemorizer.general.helpers.PermissionHelper;
 import com.marcin.jasi.roadmemorizer.general.view.appToolbar.AppToolbarData;
-import com.marcin.jasi.roadmemorizer.locationTracker.LocationTrackerService;
+import com.marcin.jasi.roadmemorizer.main.di.DaggerMainActivityComponent;
+import com.marcin.jasi.roadmemorizer.main.di.MainActivityModel;
 import com.marcin.jasi.roadmemorizer.roadsArchive.RoadsArchiveFragment;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
-import timber.log.Timber;
 
+import static com.marcin.jasi.roadmemorizer.general.Constants.REQUEST_CODE_ASK_PERMISSION;
+
+@PerActivityScope
 public class MainActivity extends AppCompatActivity {
 
     public static final int CURRENT_LOCATION_ID = R.id.currentLocationFragment;
     public static final int ROADS_ARCHIVE_ID = R.id.roadsArchiveFragment;
 
+    @Inject
+    LocationTrackerMediator locationTrackerMediator;
+
     private MainActivityBinding binding;
-    private ServiceConnection serviceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            Timber.d("service connected");
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            Timber.d("service disconnected");
-        }
-    };
-
+    private PermissionHelper permissionHelper = new PermissionHelper(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        startService(new Intent(this, LocationTrackerService.class));
+        initDependencies();
         setupBinding();
+    }
+
+    private void initDependencies() {
+        DaggerMainActivityComponent
+                .builder()
+                .applicationComponent(((Application) getApplication()).getApplicationComponent())
+                .mainActivityModel(new MainActivityModel(this))
+                .build()
+                .inject(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        locationTrackerMediator
+                .getCurrentLocationPermissionState()
+                .set(permissionHelper.checkPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION));
     }
 
     private void setupBinding() {
@@ -95,22 +112,39 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStart() {
-        bindService(new Intent(this, LocationTrackerService.class), serviceConnection, Context.BIND_AUTO_CREATE);
-
-        super.onStart();
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_CODE_ASK_PERMISSION:
+                for ( String permission : permissions) {
+                    if (permission.equals(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                        handleChangeLocationPermission(grantResults[0]);
+                    }
+                }
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
     }
 
-    @Override
-    protected void onStop() {
-        unbindService(serviceConnection);
-        super.onStop();
+    private void handleChangeLocationPermission(int grantResult) {
+        if (grantResult == PackageManager.PERMISSION_GRANTED) {
+            setGrantedPermissions(true);
+        } else {
+            runOnUiThread(() -> Toast.makeText(MainActivity.this, R.string.localizationPermission,
+                    Toast.LENGTH_LONG).show());
+
+            setGrantedPermissions(false);
+        }
+    }
+
+    private void setGrantedPermissions(boolean b) {
+        locationTrackerMediator.getCurrentLocationPermissionState().set(b);
+        locationTrackerMediator.getLocationPermissionChange().onNext(b);
     }
 
     @Override
     protected void onDestroy() {
-        stopService(new Intent(this, LocationTrackerService.class));
+        dispose();
         super.onDestroy();
     }
-
 }

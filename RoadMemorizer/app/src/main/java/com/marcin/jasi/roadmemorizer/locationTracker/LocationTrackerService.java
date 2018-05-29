@@ -1,32 +1,42 @@
 package com.marcin.jasi.roadmemorizer.locationTracker;
 
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
-import android.os.Bundle;
 import android.os.IBinder;
-import android.util.Log;
+import android.support.annotation.NonNull;
 import android.util.Pair;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.marcin.jasi.roadmemorizer.Application;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.GetCurrentEvent;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.GetLocationEvent;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.StartSavingRoad;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.StopSavingRoad;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.UnconnectReceiverEvent;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.LocationResponseData;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.PointData;
 import com.marcin.jasi.roadmemorizer.di.scope.PerServiceScope;
+import com.marcin.jasi.roadmemorizer.general.common.data.LocationProviderListener;
+import com.marcin.jasi.roadmemorizer.general.common.data.LocationProvidersHelper;
 import com.marcin.jasi.roadmemorizer.general.common.data.LocationTrackerMediator;
 import com.marcin.jasi.roadmemorizer.general.common.data.entity.GpsProvider;
 import com.marcin.jasi.roadmemorizer.general.common.data.entity.LocationProviderType;
 import com.marcin.jasi.roadmemorizer.general.common.data.entity.NetworkProvider;
+import com.marcin.jasi.roadmemorizer.locationTracker.data.LocationTrackerServiceDataSource;
 import com.marcin.jasi.roadmemorizer.locationTracker.di.DaggerLocationTrackerComponent;
 
 import javax.inject.Inject;
 
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.SchedulerSupport;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
-import static com.marcin.jasi.roadmemorizer.general.Constants.LOCATION_DISTANCE;
-import static com.marcin.jasi.roadmemorizer.general.Constants.LOCATION_INTERVAL;
+import static com.marcin.jasi.roadmemorizer.general.Constants.ENABLE_NETWORK_PROVIDER;
 
 @PerServiceScope
 public class LocationTrackerService extends Service {
@@ -35,43 +45,14 @@ public class LocationTrackerService extends Service {
 
     @Inject
     LocationTrackerMediator locationTrackerMediator;
+    @Inject
+    LocationTrackerServiceDataSource dataSource;
+    @Inject
+    LocationProvidersHelper locationProvidersHelper;
 
-    private LocationListener gpsProviderListener;
-    private LocationListener networkProviderListener;
+    private LocationProviderListener gpsProviderListener;
+    private LocationProviderListener networkProviderListener;
     private CompositeDisposable disposable = new CompositeDisposable();
-    private LocationManager locationManager = null;
-
-
-    private class LocationListener implements android.location.LocationListener {
-        private LocationProviderType provider;
-        private LocationTrackerMediator locationTrackerMediator;
-
-        public LocationListener(LocationProviderType provider, LocationTrackerMediator locationTrackerMediator) {
-            this.provider = provider;
-            this.locationTrackerMediator = locationTrackerMediator;
-        }
-
-        @Override
-        public void onLocationChanged(Location location) {
-            Log.e(TAG, "onLocationChanged: " + location);
-
-            locationTrackerMediator
-                    .getLocationChange()
-                    .onNext(new Pair<>(new LatLng(location.getLatitude(), location.getLongitude()), provider));
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-        }
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-        }
-    }
 
 
     @Override
@@ -89,13 +70,44 @@ public class LocationTrackerService extends Service {
     public void onCreate() {
         initDependencies();
 
-        gpsProviderListener = new LocationListener(new GpsProvider(), locationTrackerMediator);
-        networkProviderListener = new LocationListener(new NetworkProvider(), locationTrackerMediator);
+        gpsProviderListener = getProviderListener(new GpsProvider());
+        networkProviderListener = getProviderListener(new NetworkProvider());
 
-        initializeLocationManager();
-        tryConnectNetworkProvider();
-        tryConnectGPSProvider();
+        locationProvidersHelper.tryConnectProvider(LocationManager.NETWORK_PROVIDER, networkProviderListener);
+        locationProvidersHelper.tryConnectProvider(LocationManager.GPS_PROVIDER, gpsProviderListener);
+
         disposable.add(handleProvidersStateChange());
+        disposable.add(dataSource.getEventsPublisher()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(this::handleEvents, Timber::d));
+    }
+
+    private void handleEvents(GetLocationEvent event) {
+        Timber.e("got event" + event.getClass().getName());
+
+        if (event instanceof StartSavingRoad) {
+            if (dataSource.getLastLocationDirections() == null)
+                return;
+
+            dataSource.setIsRecorderRoad(true);
+        }
+
+        if (event instanceof StopSavingRoad) {
+            dataSource.setIsRecorderRoad(false);
+        }
+
+        if (event instanceof GetCurrentEvent && !dataSource.getIsRecorderRoad()) {
+            startProviders();
+        }
+
+        if (event instanceof UnconnectReceiverEvent && !dataSource.getIsRecorderRoad()) {
+            stopProviders();
+        }
+    }
+
+    private void startProviders() {
+        locationProvidersHelper.tryConnectProvider(LocationManager.NETWORK_PROVIDER, networkProviderListener);
+        locationProvidersHelper.tryConnectProvider(LocationManager.GPS_PROVIDER, gpsProviderListener);
     }
 
     private void initDependencies() {
@@ -106,82 +118,55 @@ public class LocationTrackerService extends Service {
                 .inject(this);
     }
 
-    private void tryConnectNetworkProvider() {
-        try {
-            locationManager.requestLocationUpdates(
-                    LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
-                    networkProviderListener);
-        } catch (java.lang.SecurityException ex) {
-            Log.i(TAG, "fail to request location update, ignore", ex);
-        } catch (IllegalArgumentException ex) {
-            Log.d(TAG, "network provider does not exist, " + ex.getMessage());
-        }
-
+    @NonNull
+    private LocationProviderListener getProviderListener(LocationProviderType type) {
+        return new LocationProviderListener(type, LocationTrackerService.this::handleLocationChange);
     }
 
-    private void tryConnectGPSProvider() {
-        try {
-            locationManager.requestLocationUpdates(
-                    LocationManager.GPS_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
-                    gpsProviderListener);
-        } catch (java.lang.SecurityException ex) {
-            Log.i(TAG, "fail to request location update, ignore", ex);
-        } catch (IllegalArgumentException ex) {
-            Log.d(TAG, "gps provider does not exist " + ex.getMessage());
+    private void handleLocationChange(Location location, LocationProviderType provider) {
+        Timber.i("onLocationChanged: " + location);
+
+        if (!ENABLE_NETWORK_PROVIDER && provider instanceof NetworkProvider)
+            return;
+
+        if (dataSource.getIsRecorderRoad()) {
+
+        } else {
+            LatLng locationDirections = new LatLng(location.getLatitude(), location.getLongitude());
+            LocationResponseData locationResponseData = new PointData(locationDirections);
+
+            dataSource.setLastLocationData(locationResponseData);
+            dataSource.setLastLocationDirections(locationDirections);
+            dataSource.getLocationResponsePublisher()
+                    .onNext(locationResponseData);
         }
     }
 
     private Disposable handleProvidersStateChange() {
         return locationTrackerMediator
                 .getLocationProviderChange()
-                .subscribe(changeState -> {
-
-                    if (changeState.second instanceof GpsProvider) {
-                        if (changeState.first) {
-                            tryConnectGPSProvider();
-                        } else {
-                            tryDisconnectGPSProvider();
-                        }
-                    } else if (changeState.second instanceof NetworkProvider) {
-                        if (changeState.first) {
-                            tryConnectNetworkProvider();
-                        } else {
-                            tryDisconnectNetworkProvider();
-                        }
-                    }
-
-                });
+                .subscribe(changeState -> handleProvidersChangeState(changeState));
     }
 
-    private void tryDisconnectGPSProvider() {
-        try {
-            locationManager.removeUpdates(gpsProviderListener);
-        } catch (Exception ex) {
-            Timber.d(ex, "fail to remove location listners, ignore");
-        }
-    }
-
-    private void tryDisconnectNetworkProvider() {
-        try {
-            locationManager.removeUpdates(networkProviderListener);
-        } catch (Exception ex) {
-            Timber.d(ex, "fail to remove location listners, ignore");
+    private void handleProvidersChangeState(Pair<Boolean, LocationProviderType> changeState) {
+        if (changeState.second instanceof GpsProvider) {
+            locationProvidersHelper.setProviderState(changeState.first, LocationManager.GPS_PROVIDER, gpsProviderListener);
+        } else if (changeState.second instanceof NetworkProvider) {
+            locationProvidersHelper.setProviderState(changeState.first, LocationManager.NETWORK_PROVIDER, networkProviderListener);
         }
     }
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
-
         disposable.dispose();
+        stopProviders();
 
-        tryDisconnectGPSProvider();
-        tryDisconnectNetworkProvider();
+        super.onDestroy();
     }
 
-    private void initializeLocationManager() {
-        if (locationManager == null) {
-            locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
-        }
+    private void stopProviders() {
+        locationProvidersHelper.setProviderState(false, LocationManager.GPS_PROVIDER, gpsProviderListener);
+        locationProvidersHelper.setProviderState(false, LocationManager.NETWORK_PROVIDER, networkProviderListener);
     }
+
 }
