@@ -10,6 +10,13 @@ public class LocationDatabaseDataSource {
         this.appDatabase = appDatabase;
     }
 
+//    public long createNewRoad();
+
+//    public List<LocationData> getRoadPoints();
+
+//    public RoadData getRoad(long id);
+
+//    public List<RoadData> getRoadList();
 
 
 }

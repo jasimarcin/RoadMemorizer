@@ -19,6 +19,7 @@ import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.Gene
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.LocationSaverEvent;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.PointData;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.PointsData;
+import com.marcin.jasi.roadmemorizer.database.data.LocationDatabaseDataSource;
 import com.marcin.jasi.roadmemorizer.di.scope.PerServiceScope;
 import com.marcin.jasi.roadmemorizer.general.common.data.LocationProviderListener;
 import com.marcin.jasi.roadmemorizer.general.common.data.LocationProvidersHelper;
@@ -26,6 +27,7 @@ import com.marcin.jasi.roadmemorizer.general.common.data.LocationTrackerMediator
 import com.marcin.jasi.roadmemorizer.general.common.data.entity.GpsProvider;
 import com.marcin.jasi.roadmemorizer.general.common.data.entity.LocationProviderType;
 import com.marcin.jasi.roadmemorizer.general.common.data.entity.NetworkProvider;
+import com.marcin.jasi.roadmemorizer.general.helpers.BitmapSaveHelper;
 import com.marcin.jasi.roadmemorizer.locationTracker.data.LocationSaverServiceDataSource;
 import com.marcin.jasi.roadmemorizer.locationTracker.di.DaggerLocationTrackerComponent;
 
@@ -41,6 +43,7 @@ import timber.log.Timber;
 
 import static com.marcin.jasi.roadmemorizer.general.Constants.ENABLE_NETWORK_PROVIDER;
 
+// todo refactor
 @PerServiceScope
 public class LocationTrackerService extends Service {
 
@@ -50,6 +53,10 @@ public class LocationTrackerService extends Service {
     LocationSaverServiceDataSource dataSource;
     @Inject
     LocationProvidersHelper locationProvidersHelper;
+    @Inject
+    BitmapSaveHelper bitmapSaveHelper;
+//    @Inject
+//    LocationDatabaseDataSource databaseDataSource;
 
     private LocationProviderListener gpsProviderListener;
     private LocationProviderListener networkProviderListener;
@@ -100,37 +107,58 @@ public class LocationTrackerService extends Service {
     private void handleEvents(LocationServiceIntent event) {
         if (event instanceof SavingButtonClickIntent) {
             if (!dataSource.getIsRecordingRoad()) {
-                if (dataSource.getLastLocationDirections() == null)
-                    return;
-
-                dataSource.setIsRecorderRoad(true);
-                dataSource.getLocationSaverPublisher()
-                        .onNext(dataSource.getLastLocationData());
+                handleStartRecording();
             } else {
-                // save db
-//                int roadId = db.saveList(list);
-                String filename = "filename";
-                dataSource.getLocationSaverPublisher()
-                        .onNext(new GenerateScreenshot(pointsList.get(0),
-                                pointsList.get(pointsList.size() - 1), pointsList,
-                                filename));
+                handleSaveRoad();
             }
-        }
-
-        if (event instanceof ScreenshotGeneratedIntent) {
-            pointsList = new ArrayList<>();
-            dataSource.setIsRecorderRoad(false);
-            dataSource.getLocationSaverPublisher()
-                    .onNext(dataSource.getLastLocationData());
-        }
-
-        if (event instanceof CurrentLocationIntent && !dataSource.getIsRecordingRoad()) {
+        } else if (event instanceof ScreenshotGeneratedIntent) {
+            handleScreenshotGenerated((ScreenshotGeneratedIntent) event);
+        } else if (event instanceof CurrentLocationIntent && !dataSource.getIsRecordingRoad()) {
             startProviders();
-        }
-
-        if (event instanceof UnconnectReceiverIntent && !dataSource.getIsRecordingRoad()) {
+        } else if (event instanceof UnconnectReceiverIntent && !dataSource.getIsRecordingRoad()) {
             stopProviders();
         }
+    }
+
+    private void handleScreenshotGenerated(ScreenshotGeneratedIntent event) {
+        bitmapSaveHelper.trySaveBitmap(event.getBitmap(),
+                event.getScreenshotName());
+        handleStopRecording();
+    }
+
+    private void handleSaveRoad() {
+        if (pointsList.size() < 2) {
+            handleStopRecording();
+            return;
+        }
+
+        // save db
+//                int roadId = db.saveList(list);
+        String filename = "filename";
+
+//        databaseDataSource.
+
+        dataSource.getLocationSaverPublisher()
+                .onNext(new GenerateScreenshot(pointsList.get(0),
+                        pointsList.get(pointsList.size() - 1), pointsList,
+                        filename));
+    }
+
+    private void handleStartRecording() {
+        if (dataSource.getLastLocationDirections() == null)
+            return;
+
+        dataSource.setIsRecorderRoad(true);
+        dataSource.getLocationSaverPublisher()
+                .onNext(dataSource.getLastLocationData());
+    }
+
+    private void handleStopRecording() {
+        pointsList = new ArrayList<>();
+        dataSource.setIsRecorderRoad(false);
+
+        updateNewLocation(dataSource.getLastLocationDirections(),
+                new PointData(dataSource.getLastLocationDirections()));
     }
 
     private void startProviders() {
@@ -149,8 +177,15 @@ public class LocationTrackerService extends Service {
         if (!ENABLE_NETWORK_PROVIDER && provider instanceof NetworkProvider)
             return;
 
+        // todo remove temporary
         if (dataSource.getIsRecordingRoad()) {
-            handleRecordingLocationChange(location);
+            for (int i = 1; i < 10; i++) {
+                Location tmp = new Location(location);
+                tmp.setLongitude(tmp.getLongitude() + i * 0.01);
+                tmp.setLatitude(tmp.getLatitude() + i * 0.01);
+                handleRecordingLocationChange(tmp);
+            }
+
         } else {
             handleCurrentLocationChange(location);
         }

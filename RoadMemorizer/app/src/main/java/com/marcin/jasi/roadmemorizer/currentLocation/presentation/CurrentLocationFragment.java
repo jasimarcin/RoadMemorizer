@@ -57,6 +57,7 @@ public class CurrentLocationFragment extends CommonFragment {
 
     public static final String TITLE = CURRENT_LOCATION_FRAGMENT_TITLE;
     public static final float ZOOM = 15.0f;
+    public static final int SCREENSHOT_ROUTE_PADDING = 100;
 
     @Inject
     ViewModelProvider.Factory viewModelProvider;
@@ -136,25 +137,7 @@ public class CurrentLocationFragment extends CommonFragment {
     private void render(CurrentLocationViewState event) {
 
         if (event instanceof GenerateScreenshotViewState) {
-
-            supportMapFragment.getMapAsync(googleMap -> {
-
-                LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
-                for (LatLng point : ((GenerateScreenshotViewState) event).getRoad())
-                    boundsBuilder.include(point);
-
-                int routePadding = 100;
-
-                LatLngBounds bounds = boundsBuilder.build();
-
-                googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, routePadding));
-                googleMap.snapshot(bitmap -> {
-
-                    viewModel.callEvent(new ScreenshotGeneratedIntent(((GenerateScreenshotViewState) event).getScreenshotFileName()));
-
-                });
-            });
-
+            takeScreenshot((GenerateScreenshotViewState) event);
             return;
         }
 
@@ -168,6 +151,22 @@ public class CurrentLocationFragment extends CommonFragment {
 
         updateAlignButton(event);
         updateSavingButton(event);
+    }
+
+    private void takeScreenshot(GenerateScreenshotViewState event) {
+        supportMapFragment.getMapAsync(googleMap -> {
+
+            LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
+            for (LatLng point : event.getRoad())
+                boundsBuilder.include(point);
+
+            LatLngBounds bounds = boundsBuilder.build();
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, SCREENSHOT_ROUTE_PADDING));
+
+            googleMap.snapshot(bitmap -> {
+                viewModel.callEvent(new ScreenshotGeneratedIntent(event.getScreenshotFileName(), bitmap));
+            });
+        });
     }
 
     private void updateRoadMapView(UpdateRoadViewState pointViewState) {

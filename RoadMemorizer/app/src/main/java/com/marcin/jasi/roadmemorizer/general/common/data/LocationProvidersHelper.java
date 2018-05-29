@@ -1,10 +1,8 @@
 package com.marcin.jasi.roadmemorizer.general.common.data;
 
-import android.app.Activity;
 import android.content.Context;
 import android.location.LocationManager;
 
-import io.reactivex.Observable;
 import timber.log.Timber;
 
 import static com.marcin.jasi.roadmemorizer.general.Constants.LOCATION_DISTANCE;

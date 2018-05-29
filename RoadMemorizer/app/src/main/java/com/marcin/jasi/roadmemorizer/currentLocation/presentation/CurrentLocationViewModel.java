@@ -23,7 +23,7 @@ import io.reactivex.Observable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.subjects.PublishSubject;
 
-
+// todo refactor
 public class CurrentLocationViewModel extends ViewModel {
 
     @Inject
@@ -39,9 +39,6 @@ public class CurrentLocationViewModel extends ViewModel {
     }
 
     public void init() {
-        if (disposable != null)
-            disposable.dispose();
-
         disposable.add(getNewLocationObservable()
                 .subscribe(locationEvent -> publishWrappedViewState(dataMapperMethod(locationEvent))));
 
