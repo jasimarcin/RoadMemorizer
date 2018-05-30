@@ -1,6 +1,5 @@
 package com.marcin.jasi.roadmemorizer.general.helpers;
 
-import android.app.DownloadManager;
 import android.graphics.Bitmap;
 
 import java.io.FileOutputStream;

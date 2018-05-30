@@ -20,23 +20,23 @@ public class PermissionHelper {
         this.activity = activity;
     }
 
-    public boolean checkPermissions(String permissions) {
-        if (ContextCompat.checkSelfPermission(activity, permissions) != PackageManager.PERMISSION_GRANTED) {
+    public boolean getPermission(String permission) {
+        if (ContextCompat.checkSelfPermission(activity, permission) != PackageManager.PERMISSION_GRANTED) {
 
-            if ((ActivityCompat.shouldShowRequestPermissionRationale(activity, permissions))) {
+            if ((ActivityCompat.shouldShowRequestPermissionRationale(activity, permission))) {
 
                 try {
                     PackageManager packageManager = activity.getPackageManager();
 
                     PermissionInfo pinfo = packageManager
-                            .getPermissionInfo(permissions, PackageManager.GET_META_DATA);
+                            .getPermissionInfo(permission, PackageManager.GET_META_DATA);
 
                     pinfo.loadLabel(packageManager).toString();
 
                     showMessageOKCancel(String.format("You need to allow access to ", pinfo.loadLabel(packageManager).toString()),
                             (dialog, which) -> ActivityCompat.requestPermissions(
                                     activity,
-                                    new String[]{permissions},
+                                    new String[]{permission},
                                     Constants.REQUEST_CODE_ASK_PERMISSION));
 
                 } catch (Exception e) {
@@ -46,7 +46,7 @@ public class PermissionHelper {
                 return false;
             } else {
 
-                ActivityCompat.requestPermissions(activity, new String[]{permissions}, REQUEST_CODE_ASK_PERMISSION);
+                ActivityCompat.requestPermissions(activity, new String[]{permission}, REQUEST_CODE_ASK_PERMISSION);
                 return false;
             }
         }
@@ -62,6 +62,10 @@ public class PermissionHelper {
                 .create()
                 .show();
 
+    }
+
+    public boolean checkPermission(String permission) {
+        return ContextCompat.checkSelfPermission(activity, permission) != PackageManager.PERMISSION_GRANTED;
     }
 
 }

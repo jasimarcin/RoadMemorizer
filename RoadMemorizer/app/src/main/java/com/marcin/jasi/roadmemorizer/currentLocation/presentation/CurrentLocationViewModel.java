@@ -6,6 +6,7 @@ import com.marcin.jasi.roadmemorizer.currentLocation.domain.GetLocationUseCase;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.AlignClickIntent;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.LocationServiceIntent;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.MoveCameraIntent;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.SavingButtonClickIntent;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.GenerateScreenshot;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.LocationSaverEvent;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.PointData;
@@ -16,6 +17,7 @@ import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.Generat
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.IdleViewState;
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.UpdatePointViewState;
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.UpdateRoadViewState;
+import com.marcin.jasi.roadmemorizer.general.helpers.PermissionHelper;
 
 import javax.inject.Inject;
 
@@ -28,6 +30,8 @@ public class CurrentLocationViewModel extends ViewModel {
 
     @Inject
     GetLocationUseCase getLocationUseCase;
+    @Inject
+    PermissionHelper permissionHelper;
 
     private CompositeDisposable disposable = new CompositeDisposable();
     private PublishSubject<CurrentLocationViewState> viewStatePublisher = PublishSubject.create();
@@ -55,6 +59,10 @@ public class CurrentLocationViewModel extends ViewModel {
             handleMoveCameraEvent();
         else if (event instanceof AlignClickIntent)
             handleAlignClick();
+
+        // todo
+        // it could be other types of event
+        // dedicated for useCase
         getLocationUseCase.callEvent(event);
     }
 

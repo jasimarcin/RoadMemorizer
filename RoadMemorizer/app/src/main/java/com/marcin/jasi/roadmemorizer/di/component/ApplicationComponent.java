@@ -1,10 +1,10 @@
 package com.marcin.jasi.roadmemorizer.di.component;
 
 
-import android.arch.lifecycle.ViewModelProvider;
 import android.arch.persistence.room.RoomDatabase;
 
 import com.marcin.jasi.roadmemorizer.Application;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.GetLocationUseCase;
 import com.marcin.jasi.roadmemorizer.di.module.ApplicationModule;
 import com.marcin.jasi.roadmemorizer.di.module.ViewModelModule;
 import com.marcin.jasi.roadmemorizer.di.scope.PerAppScope;
@@ -16,8 +16,7 @@ import com.marcin.jasi.roadmemorizer.locationTracker.data.LocationSaverServiceDa
 import dagger.Component;
 
 @Component(modules = {
-        ApplicationModule.class,
-        ViewModelModule.class
+        ApplicationModule.class
 })
 @PerAppScope
 public interface ApplicationComponent {
@@ -28,12 +27,12 @@ public interface ApplicationComponent {
 
     LocationSaverServiceDataSource locationTrackerServiceDataSource();
 
-    ViewModelProvider.Factory viewModelProviders();
-
     RoomDatabase roomDatabase();
 
     LocationProvidersHelper locationHelper();
 
-    BitmapSaveHelper provideBitmapSaveHelper();
+    BitmapSaveHelper bitmapSaveHelper();
+
+    GetLocationUseCase getLocationUseCase();
 
 }

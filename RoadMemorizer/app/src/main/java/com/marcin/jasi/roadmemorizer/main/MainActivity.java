@@ -17,6 +17,7 @@ import com.marcin.jasi.roadmemorizer.general.common.data.LocationTrackerMediator
 import com.marcin.jasi.roadmemorizer.general.helpers.PermissionHelper;
 import com.marcin.jasi.roadmemorizer.general.view.appToolbar.AppToolbarData;
 import com.marcin.jasi.roadmemorizer.main.di.DaggerMainActivityComponent;
+import com.marcin.jasi.roadmemorizer.main.di.MainActivityComponent;
 import com.marcin.jasi.roadmemorizer.main.di.MainActivityModel;
 import com.marcin.jasi.roadmemorizer.roadsArchive.RoadsArchiveFragment;
 
@@ -38,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Inject
     LocationTrackerMediator locationTrackerMediator;
+    private MainActivityComponent component;
 
     private MainActivityBinding binding;
     private PermissionHelper permissionHelper = new PermissionHelper(this);
@@ -51,12 +53,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initDependencies() {
-        DaggerMainActivityComponent
+        component = DaggerMainActivityComponent
                 .builder()
                 .applicationComponent(((Application) getApplication()).getApplicationComponent())
                 .mainActivityModel(new MainActivityModel(this))
-                .build()
-                .inject(this);
+                .build();
+
+        component.inject(this);
     }
 
     @Override
@@ -65,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
 
         locationTrackerMediator
                 .getCurrentLocationPermissionState()
-                .set(permissionHelper.checkPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION));
+                .set(permissionHelper.getPermission(android.Manifest.permission.ACCESS_FINE_LOCATION));
     }
 
     private void setupBinding() {
@@ -115,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         switch (requestCode) {
             case REQUEST_CODE_ASK_PERMISSION:
-                for ( String permission : permissions) {
+                for (String permission : permissions) {
                     if (permission.equals(Manifest.permission.ACCESS_FINE_LOCATION)) {
                         handleChangeLocationPermission(grantResults[0]);
                     }
@@ -147,4 +150,9 @@ public class MainActivity extends AppCompatActivity {
         dispose();
         super.onDestroy();
     }
+
+    public MainActivityComponent getComponent() {
+        return component;
+    }
+
 }

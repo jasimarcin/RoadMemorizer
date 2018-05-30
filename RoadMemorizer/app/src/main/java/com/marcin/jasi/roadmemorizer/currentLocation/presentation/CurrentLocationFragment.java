@@ -20,7 +20,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.marcin.jasi.roadmemorizer.Application;
 import com.marcin.jasi.roadmemorizer.R;
 import com.marcin.jasi.roadmemorizer.currentLocation.di.DaggerCurrentLocationComponent;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.AlignClickIntent;
@@ -37,6 +36,7 @@ import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.UpdateR
 import com.marcin.jasi.roadmemorizer.databinding.CurrentLocationFragmentBinding;
 import com.marcin.jasi.roadmemorizer.di.scope.PerFragment;
 import com.marcin.jasi.roadmemorizer.general.common.presentation.CommonFragment;
+import com.marcin.jasi.roadmemorizer.main.MainActivity;
 
 import java.util.List;
 
@@ -101,7 +101,7 @@ public class CurrentLocationFragment extends CommonFragment {
     private void initDependencies() {
         DaggerCurrentLocationComponent
                 .builder()
-                .applicationComponent(((Application) getActivity().getApplication()).getApplicationComponent())
+                .mainActivityComponent(((MainActivity) getActivity()).getComponent())
                 .build()
                 .inject(this);
     }
@@ -137,7 +137,7 @@ public class CurrentLocationFragment extends CommonFragment {
     private void render(CurrentLocationViewState event) {
 
         if (event instanceof GenerateScreenshotViewState) {
-            takeScreenshot((GenerateScreenshotViewState) event);
+            handleTakeScreenshot((GenerateScreenshotViewState) event);
             return;
         }
 
@@ -153,7 +153,7 @@ public class CurrentLocationFragment extends CommonFragment {
         updateSavingButton(event);
     }
 
-    private void takeScreenshot(GenerateScreenshotViewState event) {
+    private void handleTakeScreenshot(GenerateScreenshotViewState event) {
         supportMapFragment.getMapAsync(googleMap -> {
 
             LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
@@ -161,11 +161,25 @@ public class CurrentLocationFragment extends CommonFragment {
                 boundsBuilder.include(point);
 
             LatLngBounds bounds = boundsBuilder.build();
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, SCREENSHOT_ROUTE_PADDING));
 
-            googleMap.snapshot(bitmap -> {
-                viewModel.callEvent(new ScreenshotGeneratedIntent(event.getScreenshotFileName(), bitmap));
-            });
+            googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, SCREENSHOT_ROUTE_PADDING)
+                    , new GoogleMap.CancelableCallback() {
+                        @Override
+                        public void onFinish() {
+                            takeScreenshot(googleMap, event);
+                        }
+
+                        @Override
+                        public void onCancel() {
+
+                        }
+                    });
+        });
+    }
+
+    private void takeScreenshot(GoogleMap googleMap, GenerateScreenshotViewState event) {
+        googleMap.snapshot(bitmap -> {
+            viewModel.callEvent(new ScreenshotGeneratedIntent(event.getScreenshotFileName(), bitmap));
         });
     }
 
@@ -227,12 +241,16 @@ public class CurrentLocationFragment extends CommonFragment {
     }
 
     private void setPolyline(GoogleMap googleMap, List<LatLng> points) {
-        if (polyline == null && points != null && points.size() > 0) {
-            polyline = googleMap.addPolyline(new PolylineOptions()
-                    .color(ContextCompat.getColor(getContext(), R.color.colorPrimary)));
+        if (points != null && points.size() > 0) {
+
+            if (polyline == null)
+                polyline = googleMap.addPolyline(new PolylineOptions()
+                        .color(ContextCompat.getColor(getContext(), R.color.colorPrimary)));
+
             polyline.setPoints(points);
             polyline.setVisible(true);
         }
+
     }
 
     private void setEndPoint(GoogleMap googleMap, LatLng point) {
@@ -288,6 +306,5 @@ public class CurrentLocationFragment extends CommonFragment {
         super.onPause();
     }
 
-    //        googleMap.snapshot(bitmap -> {     });
     // https://github.com/akexorcist/Android-GoogleDirectionLibrary
 }

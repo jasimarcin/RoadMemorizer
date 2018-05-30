@@ -136,8 +136,6 @@ public class LocationTrackerService extends Service {
 //                int roadId = db.saveList(list);
         String filename = "filename";
 
-//        databaseDataSource.
-
         dataSource.getLocationSaverPublisher()
                 .onNext(new GenerateScreenshot(pointsList.get(0),
                         pointsList.get(pointsList.size() - 1), pointsList,
@@ -177,14 +175,18 @@ public class LocationTrackerService extends Service {
         if (!ENABLE_NETWORK_PROVIDER && provider instanceof NetworkProvider)
             return;
 
-        // todo remove temporary
         if (dataSource.getIsRecordingRoad()) {
-            for (int i = 1; i < 10; i++) {
-                Location tmp = new Location(location);
-                tmp.setLongitude(tmp.getLongitude() + i * 0.01);
-                tmp.setLatitude(tmp.getLatitude() + i * 0.01);
-                handleRecordingLocationChange(tmp);
-            }
+
+
+//        // todo remove temporary
+//            for (int i = 1; i < 10; i++) {
+//                Location tmp = new Location(location);
+//                tmp.setLongitude(tmp.getLongitude() + i * 0.01);
+//                tmp.setLatitude(tmp.getLatitude() + i * 0.01);
+//                handleRecordingLocationChange(tmp);
+//            }
+
+            handleRecordingLocationChange(location);
 
         } else {
             handleCurrentLocationChange(location);
