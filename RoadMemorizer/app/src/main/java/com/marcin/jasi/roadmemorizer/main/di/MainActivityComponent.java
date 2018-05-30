@@ -2,7 +2,9 @@ package com.marcin.jasi.roadmemorizer.main.di;
 
 import android.arch.lifecycle.ViewModelProvider;
 import android.arch.persistence.room.RoomDatabase;
+import android.content.res.Resources;
 
+import com.marcin.jasi.roadmemorizer.di.annotation.FilesDir;
 import com.marcin.jasi.roadmemorizer.di.component.ApplicationComponent;
 import com.marcin.jasi.roadmemorizer.di.module.ViewModelModule;
 import com.marcin.jasi.roadmemorizer.di.scope.PerActivityScope;
@@ -30,13 +32,16 @@ public interface MainActivityComponent {
 
     LocationTrackerMediator locationTrackerMediator();
 
+    Resources resources();
+
     ViewModelProvider.Factory viewModelProvider();
 
     LocationSaverServiceDataSource locationTrackerServiceDataSource();
 
-    RoomDatabase roomDatabase();
-
     LocationProvidersHelper locationHelper();
 
     BitmapSaveHelper provideBitmapSaveHelper();
+
+    @FilesDir
+    String applicationStoragePath();
 }

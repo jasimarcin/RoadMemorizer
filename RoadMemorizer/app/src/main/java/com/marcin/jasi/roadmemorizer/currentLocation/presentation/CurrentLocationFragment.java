@@ -10,6 +10,7 @@ import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -30,6 +31,7 @@ import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.Screens
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.UnconnectReceiverIntent;
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.AlignMap;
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.CurrentLocationViewState;
+import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.ErrorViewState;
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.GenerateScreenshotViewState;
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.UpdatePointViewState;
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.UpdateRoadViewState;
@@ -45,15 +47,18 @@ import javax.inject.Inject;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
+import timber.log.Timber;
 
 import static com.marcin.jasi.roadmemorizer.general.Constants.CURRENT_LOCATION_FRAGMENT_TITLE;
 
 
 // todo big refactor
-// todo after recording screenshot
-
 @PerFragment
 public class CurrentLocationFragment extends CommonFragment {
+
+    interface ScreenshotListener {
+        void screenshotGenerated();
+    }
 
     public static final String TITLE = CURRENT_LOCATION_FRAGMENT_TITLE;
     public static final float ZOOM = 15.0f;
@@ -136,10 +141,21 @@ public class CurrentLocationFragment extends CommonFragment {
 
     private void render(CurrentLocationViewState event) {
 
+        if (event instanceof ErrorViewState) {
+            showErrorMessage(((ErrorViewState) event).getMessage());
+            return;
+        }
+
         if (event instanceof GenerateScreenshotViewState) {
             handleTakeScreenshot((GenerateScreenshotViewState) event);
             return;
         }
+
+        updateAlignButton(event);
+        updateSavingButton(event);
+
+        if (viewModel.isAnimating())
+            return;
 
         if (event instanceof UpdateRoadViewState) {
             updateRoadMapView(((UpdateRoadViewState) event));
@@ -149,37 +165,47 @@ public class CurrentLocationFragment extends CommonFragment {
             alignCameraToLocation(((AlignMap) event).getAlignPoint());
         }
 
-        updateAlignButton(event);
-        updateSavingButton(event);
+    }
+
+    private void showErrorMessage(String message) {
+        getActivity().runOnUiThread(() -> Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show());
     }
 
     private void handleTakeScreenshot(GenerateScreenshotViewState event) {
         supportMapFragment.getMapAsync(googleMap -> {
 
             LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
+
             for (LatLng point : event.getRoad())
                 boundsBuilder.include(point);
 
             LatLngBounds bounds = boundsBuilder.build();
 
-            googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, SCREENSHOT_ROUTE_PADDING)
-                    , new GoogleMap.CancelableCallback() {
-                        @Override
-                        public void onFinish() {
-                            takeScreenshot(googleMap, event);
-                        }
-
-                        @Override
-                        public void onCancel() {
-
-                        }
-                    });
+            animateToScreenshot(event, googleMap, bounds);
         });
     }
 
-    private void takeScreenshot(GoogleMap googleMap, GenerateScreenshotViewState event) {
+    private void animateToScreenshot(GenerateScreenshotViewState event, GoogleMap googleMap, LatLngBounds bounds) {
+        viewModel.setAnimating(true);
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, SCREENSHOT_ROUTE_PADDING)
+                , new GoogleMap.CancelableCallback() {
+                    @Override
+                    public void onFinish() {
+                        googleMap.setOnMapLoadedCallback(() -> takeScreenshot(googleMap, event,
+                                () -> viewModel.setAnimating(false)));
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        viewModel.setAnimating(false);
+                    }
+                });
+    }
+
+    private void takeScreenshot(GoogleMap googleMap, GenerateScreenshotViewState event, ScreenshotListener listener) {
         googleMap.snapshot(bitmap -> {
             viewModel.callEvent(new ScreenshotGeneratedIntent(event.getScreenshotFileName(), bitmap));
+            listener.screenshotGenerated();
         });
     }
 

@@ -19,8 +19,9 @@ import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.Gene
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.LocationSaverEvent;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.PointData;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.PointsData;
-import com.marcin.jasi.roadmemorizer.database.data.LocationDatabaseDataSource;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.SavingRoadError;
 import com.marcin.jasi.roadmemorizer.di.scope.PerServiceScope;
+import com.marcin.jasi.roadmemorizer.general.Constants;
 import com.marcin.jasi.roadmemorizer.general.common.data.LocationProviderListener;
 import com.marcin.jasi.roadmemorizer.general.common.data.LocationProvidersHelper;
 import com.marcin.jasi.roadmemorizer.general.common.data.LocationTrackerMediator;
@@ -30,6 +31,7 @@ import com.marcin.jasi.roadmemorizer.general.common.data.entity.NetworkProvider;
 import com.marcin.jasi.roadmemorizer.general.helpers.BitmapSaveHelper;
 import com.marcin.jasi.roadmemorizer.locationTracker.data.LocationSaverServiceDataSource;
 import com.marcin.jasi.roadmemorizer.locationTracker.di.DaggerLocationTrackerComponent;
+import com.marcin.jasi.roadmemorizer.locationTracker.domain.interactor.SaveRoadUseCase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +41,7 @@ import javax.inject.Inject;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
 import static com.marcin.jasi.roadmemorizer.general.Constants.ENABLE_NETWORK_PROVIDER;
@@ -55,8 +58,8 @@ public class LocationTrackerService extends Service {
     LocationProvidersHelper locationProvidersHelper;
     @Inject
     BitmapSaveHelper bitmapSaveHelper;
-//    @Inject
-//    LocationDatabaseDataSource databaseDataSource;
+    @Inject
+    SaveRoadUseCase saveRoadUseCase;
 
     private LocationProviderListener gpsProviderListener;
     private LocationProviderListener networkProviderListener;
@@ -132,14 +135,33 @@ public class LocationTrackerService extends Service {
             return;
         }
 
-        // save db
-//                int roadId = db.saveList(list);
-        String filename = "filename";
+        disposable.add(saveRoad());
+    }
+
+    @NonNull
+    private Disposable saveRoad() {
+        return saveRoadUseCase.saveRoad(pointsList)
+                .subscribe(this::handleRoadSaved,
+                        Timber::d,
+                        () -> Timber.d("COMPLETABLE"));
+    }
+
+    private void handleRoadSaved(String bitmapFilename) {
+        if (bitmapFilename.equals(Constants.EMPTY_STRING)) {
+            sendSavingError();
+            return;
+        }
 
         dataSource.getLocationSaverPublisher()
                 .onNext(new GenerateScreenshot(pointsList.get(0),
-                        pointsList.get(pointsList.size() - 1), pointsList,
-                        filename));
+                        pointsList.get(pointsList.size() - 1),
+                        pointsList,
+                        bitmapFilename));
+    }
+
+    private void sendSavingError() {
+        dataSource.getLocationSaverPublisher()
+                .onNext(new SavingRoadError());
     }
 
     private void handleStartRecording() {
@@ -149,13 +171,15 @@ public class LocationTrackerService extends Service {
         dataSource.setIsRecorderRoad(true);
         dataSource.getLocationSaverPublisher()
                 .onNext(dataSource.getLastLocationData());
+
+        handleRecordingLocationChange(dataSource.getLastLocation());
     }
 
     private void handleStopRecording() {
         pointsList = new ArrayList<>();
         dataSource.setIsRecorderRoad(false);
 
-        updateNewLocation(dataSource.getLastLocationDirections(),
+        updateNewLocation(dataSource.getLastLocation(),
                 new PointData(dataSource.getLastLocationDirections()));
     }
 
@@ -176,18 +200,7 @@ public class LocationTrackerService extends Service {
             return;
 
         if (dataSource.getIsRecordingRoad()) {
-
-
-//        // todo remove temporary
-//            for (int i = 1; i < 10; i++) {
-//                Location tmp = new Location(location);
-//                tmp.setLongitude(tmp.getLongitude() + i * 0.01);
-//                tmp.setLatitude(tmp.getLatitude() + i * 0.01);
-//                handleRecordingLocationChange(tmp);
-//            }
-
             handleRecordingLocationChange(location);
-
         } else {
             handleCurrentLocationChange(location);
         }
@@ -202,19 +215,19 @@ public class LocationTrackerService extends Service {
                 locationDirections,
                 pointsList);
 
-        updateNewLocation(locationDirections, locationSaverEvent);
+        updateNewLocation(location, locationSaverEvent);
     }
 
     private void handleCurrentLocationChange(Location location) {
         LatLng locationDirections = new LatLng(location.getLatitude(), location.getLongitude());
         LocationSaverEvent locationSaverEvent = new PointData(locationDirections);
 
-        updateNewLocation(locationDirections, locationSaverEvent);
+        updateNewLocation(location, locationSaverEvent);
     }
 
-    private void updateNewLocation(LatLng locationDirections, LocationSaverEvent locationSaverEvent) {
+    private void updateNewLocation(Location location, LocationSaverEvent locationSaverEvent) {
         dataSource.setLastLocationData(locationSaverEvent);
-        dataSource.setLastLocationDirections(locationDirections);
+        dataSource.setLastLocationDirections(location);
         dataSource.getLocationSaverPublisher()
                 .onNext(locationSaverEvent);
     }
@@ -222,7 +235,7 @@ public class LocationTrackerService extends Service {
     private Disposable handleProvidersStateChange() {
         return locationTrackerMediator
                 .getLocationProviderChange()
-                .subscribe(changeState -> handleProvidersChangeState(changeState));
+                .subscribe(this::handleProvidersChangeState);
     }
 
     private void handleProvidersChangeState(Pair<Boolean, LocationProviderType> changeState) {

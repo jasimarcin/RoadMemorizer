@@ -3,13 +3,11 @@ package com.marcin.jasi.roadmemorizer.currentLocation.di;
 import android.arch.lifecycle.ViewModelProvider;
 
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.CurrentLocationFragment;
-import com.marcin.jasi.roadmemorizer.di.component.ApplicationComponent;
 import com.marcin.jasi.roadmemorizer.di.scope.PerFragment;
 import com.marcin.jasi.roadmemorizer.general.common.data.LocationTrackerMediator;
 import com.marcin.jasi.roadmemorizer.general.helpers.PermissionHelper;
 import com.marcin.jasi.roadmemorizer.main.di.MainActivityComponent;
 
-import java.security.Permission;
 
 import dagger.Component;
 

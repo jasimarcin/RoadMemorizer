@@ -1,5 +1,7 @@
 package com.marcin.jasi.roadmemorizer.locationTracker.data;
 
+import android.location.Location;
+
 import com.google.android.gms.maps.model.LatLng;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.LocationServiceIntent;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.LocationSaverEvent;
@@ -12,7 +14,7 @@ import io.reactivex.subjects.PublishSubject;
 public class LocationSaverServiceDataSource {
 
     private AtomicReference<LocationSaverEvent> lastLocationData = new AtomicReference<>(null);
-    private AtomicReference<LatLng> lastLocationDirections = new AtomicReference<>(null);
+    private AtomicReference<Location> lastLocation = new AtomicReference<>(null);
     private PublishSubject<LocationSaverEvent> locationSaverPublisher = PublishSubject.create();
     private PublishSubject<LocationServiceIntent> eventsPublisher = PublishSubject.create();
     private AtomicBoolean isRecorderRoad = new AtomicBoolean(false);
@@ -27,11 +29,18 @@ public class LocationSaverServiceDataSource {
     }
 
     public LatLng getLastLocationDirections() {
-        return lastLocationDirections.get();
+        if (lastLocation != null && lastLocation.get() != null)
+            return new LatLng(lastLocation.get().getLatitude(), lastLocation.get().getLongitude());
+        else
+            return null;
     }
 
-    public void setLastLocationDirections(LatLng lastLocationDirections) {
-        this.lastLocationDirections.set(lastLocationDirections);
+    public Location getLastLocation() {
+        return lastLocation.get();
+    }
+
+    public void setLastLocationDirections(Location lastLocationDirections) {
+        this.lastLocation.set(lastLocationDirections);
     }
 
     public PublishSubject<LocationSaverEvent> getLocationSaverPublisher() {

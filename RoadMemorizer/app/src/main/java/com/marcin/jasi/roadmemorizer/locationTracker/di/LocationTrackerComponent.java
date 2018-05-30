@@ -5,6 +5,7 @@ import com.marcin.jasi.roadmemorizer.di.scope.PerServiceScope;
 import com.marcin.jasi.roadmemorizer.general.common.data.LocationTrackerMediator;
 import com.marcin.jasi.roadmemorizer.locationTracker.LocationTrackerService;
 import com.marcin.jasi.roadmemorizer.locationTracker.data.LocationSaverServiceDataSource;
+import com.marcin.jasi.roadmemorizer.locationTracker.domain.interactor.SaveRoadUseCase;
 
 import dagger.Component;
 
@@ -17,4 +18,6 @@ public interface LocationTrackerComponent {
     LocationTrackerMediator gpsTrackerMediator();
 
     LocationSaverServiceDataSource locationTrackerServiceDataSource();
+
+    SaveRoadUseCase saveRoadUseCase();
 }

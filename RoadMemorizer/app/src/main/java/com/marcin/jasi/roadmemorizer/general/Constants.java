@@ -2,6 +2,8 @@ package com.marcin.jasi.roadmemorizer.general;
 
 public class Constants {
 
+    public static final String EMPTY_STRING = "";
+
     public static final int DATABASE_VERSION = 1;
     public static final String DATABASE_NAME = "roadMemorizerDb.db";
 
@@ -13,4 +15,5 @@ public class Constants {
     public static final int REQUEST_CODE_ASK_PERMISSION = 123;
 
     public static final String CURRENT_LOCATION_FRAGMENT_TITLE = "Aktualna lokalizacja";
+
 }

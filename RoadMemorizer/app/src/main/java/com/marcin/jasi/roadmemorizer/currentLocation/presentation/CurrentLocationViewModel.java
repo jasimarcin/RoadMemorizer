@@ -1,7 +1,9 @@
 package com.marcin.jasi.roadmemorizer.currentLocation.presentation;
 
 import android.arch.lifecycle.ViewModel;
+import android.content.res.Resources;
 
+import com.marcin.jasi.roadmemorizer.R;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.GetLocationUseCase;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.AlignClickIntent;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.LocationServiceIntent;
@@ -11,8 +13,10 @@ import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.Gene
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.LocationSaverEvent;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.PointData;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.PointsData;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.SavingRoadError;
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.AlignMap;
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.CurrentLocationViewState;
+import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.ErrorViewState;
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.GenerateScreenshotViewState;
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.IdleViewState;
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.UpdatePointViewState;
@@ -32,10 +36,13 @@ public class CurrentLocationViewModel extends ViewModel {
     GetLocationUseCase getLocationUseCase;
     @Inject
     PermissionHelper permissionHelper;
+    @Inject
+    Resources resources;
 
-    private CompositeDisposable disposable = new CompositeDisposable();
+    private CompositeDisposable disposable;
     private PublishSubject<CurrentLocationViewState> viewStatePublisher = PublishSubject.create();
     private boolean cameraMoved = false;
+    private boolean isAnimating = false;
 
 
     @Inject
@@ -43,6 +50,11 @@ public class CurrentLocationViewModel extends ViewModel {
     }
 
     public void init() {
+        if (disposable != null)
+            disposable.dispose();
+
+        disposable = new CompositeDisposable();
+
         disposable.add(getNewLocationObservable()
                 .subscribe(locationEvent -> publishWrappedViewState(dataMapperMethod(locationEvent))));
 
@@ -87,6 +99,10 @@ public class CurrentLocationViewModel extends ViewModel {
     }
 
     private CurrentLocationViewState dataMapperMethod(LocationSaverEvent locationEvent) {
+        if (locationEvent instanceof SavingRoadError) {
+            return new ErrorViewState(resources.getString(R.string.save_road_error_message));
+        }
+
         if (locationEvent instanceof GenerateScreenshot) {
             return new GenerateScreenshotViewState(
                     ((PointsData) locationEvent).getPoints(),
@@ -142,8 +158,16 @@ public class CurrentLocationViewModel extends ViewModel {
         return viewStatePublisher;
     }
 
-    public boolean gotLastLocation() {
+    private boolean gotLastLocation() {
         return getLocationUseCase.getLastLocation() != null;
+    }
+
+    public boolean isAnimating() {
+        return isAnimating;
+    }
+
+    public void setAnimating(boolean animating) {
+        isAnimating = animating;
     }
 
     public void dispose() {

@@ -9,6 +9,7 @@ import com.marcin.jasi.roadmemorizer.database.data.entities.LocationData;
 
 import java.util.List;
 
+import io.reactivex.Completable;
 import io.reactivex.Flowable;
 
 @Dao
@@ -16,6 +17,9 @@ public interface LocationDao {
 
     @Query("SELECT * FROM LocationData WHERE roadId == :roadId")
     Flowable<List<LocationData>> getLocations(long roadId);
+
+    @Insert
+    void insertRoad(List<LocationData> road);
 
     @Insert
     void insertLocation(LocationData data);

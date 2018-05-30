@@ -133,8 +133,9 @@ public class MainActivity extends AppCompatActivity {
         if (grantResult == PackageManager.PERMISSION_GRANTED) {
             setGrantedPermissions(true);
         } else {
-            runOnUiThread(() -> Toast.makeText(MainActivity.this, R.string.localizationPermission,
-                    Toast.LENGTH_LONG).show());
+            runOnUiThread(() ->
+                    Toast.makeText(MainActivity.this, R.string.localizationPermission, Toast.LENGTH_LONG)
+                            .show());
 
             setGrantedPermissions(false);
         }
