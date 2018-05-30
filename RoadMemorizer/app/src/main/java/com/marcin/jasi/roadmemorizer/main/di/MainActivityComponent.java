@@ -14,6 +14,7 @@ import com.marcin.jasi.roadmemorizer.general.helpers.BitmapSaveHelper;
 import com.marcin.jasi.roadmemorizer.general.helpers.PermissionHelper;
 import com.marcin.jasi.roadmemorizer.locationTracker.data.LocationSaverServiceDataSource;
 import com.marcin.jasi.roadmemorizer.main.MainActivity;
+import com.marcin.jasi.roadmemorizer.roadsArchive.domain.interactor.GetRoadsListUseCase;
 
 import dagger.Component;
 
@@ -44,4 +45,6 @@ public interface MainActivityComponent {
 
     @FilesDir
     String applicationStoragePath();
+
+    GetRoadsListUseCase getRoadListUseCase();
 }

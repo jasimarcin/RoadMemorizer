@@ -19,7 +19,7 @@ import com.marcin.jasi.roadmemorizer.general.view.appToolbar.AppToolbarData;
 import com.marcin.jasi.roadmemorizer.main.di.DaggerMainActivityComponent;
 import com.marcin.jasi.roadmemorizer.main.di.MainActivityComponent;
 import com.marcin.jasi.roadmemorizer.main.di.MainActivityModel;
-import com.marcin.jasi.roadmemorizer.roadsArchive.RoadsArchiveFragment;
+import com.marcin.jasi.roadmemorizer.roadsArchive.presentation.RoadsArchiveFragment;
 
 import java.util.ArrayList;
 import java.util.List;

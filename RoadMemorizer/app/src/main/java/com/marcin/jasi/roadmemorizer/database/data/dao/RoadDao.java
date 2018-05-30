@@ -16,4 +16,7 @@ public interface RoadDao {
 
     @Query("SELECT * FROM RoadData")
     List<RoadData> getRoads();
+
+    @Query("UPDATE RoadData SET filename = :filename WHERE id = :roadId")
+    void uploadRoadFilename(String filename, Long roadId);
 }

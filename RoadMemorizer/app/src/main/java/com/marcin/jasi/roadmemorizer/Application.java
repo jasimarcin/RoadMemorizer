@@ -39,8 +39,17 @@ public class Application extends android.app.Application {
         Timber.plant(new Timber.DebugTree());
         initDependencies();
 
-        startService(new Intent(this, LocationTrackerService.class));
-        bindService(new Intent(this, LocationTrackerService.class), serviceConnection, Context.BIND_AUTO_CREATE);
+        tryStartService();
+    }
+
+    private void tryStartService() {
+        try {
+            startService(new Intent(this, LocationTrackerService.class));
+            bindService(new Intent(this, LocationTrackerService.class),
+                    serviceConnection, Context.BIND_AUTO_CREATE);
+        } catch (Exception e) {
+            Timber.d(e);
+        }
     }
 
     private void initDependencies() {
@@ -56,8 +65,16 @@ public class Application extends android.app.Application {
 
     @Override
     public void onTerminate() {
-        unbindService(serviceConnection);
-        stopService(new Intent(this, LocationTrackerService.class));
+        tryStopService();
         super.onTerminate();
+    }
+
+    private void tryStopService() {
+        try {
+            unbindService(serviceConnection);
+            stopService(new Intent(this, LocationTrackerService.class));
+        } catch (Exception e) {
+            Timber.d(e);
+        }
     }
 }

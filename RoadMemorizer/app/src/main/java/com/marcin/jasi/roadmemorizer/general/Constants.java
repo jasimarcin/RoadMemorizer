@@ -15,5 +15,6 @@ public class Constants {
     public static final int REQUEST_CODE_ASK_PERMISSION = 123;
 
     public static final String CURRENT_LOCATION_FRAGMENT_TITLE = "Aktualna lokalizacja";
+    public static final String ROADS_ARCHIVE_FRAGMENT_TITLE = "Zapisane trasy";
 
 }

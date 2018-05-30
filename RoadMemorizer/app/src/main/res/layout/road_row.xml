@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="viewModel"
+            type="com.marcin.jasi.roadmemorizer.roadsArchive.presentation.viewModel.RoadRowViewModel" />
+    </data>
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary">
+
+        <ImageView
+            android:id="@+id/map_bitmap"
+            android:layout_width="150dp"
+            android:layout_height="100dp"
+            android:layout_marginRight="@dimen/row_road_padding"
+            android:background="@color/colorPrimaryText"
+            app:image_path="@{viewModel.getImageFilePath()}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/road_row_text_padding"
+            android:text="@{viewModel.getDateRow()}"
+            android:textColor="@color/colorPrimaryText"
+            app:layout_constraintBottom_toTopOf="@+id/points_quantity"
+            app:layout_constraintLeft_toRightOf="@+id/map_bitmap"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Date" />
+
+        <TextView
+            android:id="@+id/points_quantity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/road_row_text_padding"
+            android:text="@{viewModel.getPiontsQuantityRow()}"
+            android:textColor="@color/colorPrimaryText"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toRightOf="@+id/map_bitmap"
+            app:layout_constraintTop_toBottomOf="@id/date"
+            tools:text="Points" />
+
+    </android.support.constraint.ConstraintLayout>
+</layout>

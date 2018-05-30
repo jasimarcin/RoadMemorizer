@@ -100,7 +100,7 @@ public class AppToolbar extends LinearLayout {
 
         recyclerView.setAdapter(adapter);
 
-        VerticalRecyclerDivider divider = new VerticalRecyclerDivider(1);
+        VerticalRecyclerDivider divider = new VerticalRecyclerDivider(1, false);
         recyclerView.addItemDecoration(divider);
     }
 

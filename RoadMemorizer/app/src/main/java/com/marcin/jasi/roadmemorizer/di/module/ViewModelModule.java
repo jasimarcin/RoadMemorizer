@@ -8,6 +8,7 @@ import com.marcin.jasi.roadmemorizer.currentLocation.presentation.CurrentLocatio
 import com.marcin.jasi.roadmemorizer.di.annotation.ViewModelKey;
 import com.marcin.jasi.roadmemorizer.di.scope.PerActivityScope;
 import com.marcin.jasi.roadmemorizer.general.common.presentation.AppViewModelFactory;
+import com.marcin.jasi.roadmemorizer.roadsArchive.presentation.viewModel.RoadsArchiveViewModel;
 
 
 import dagger.Binds;
@@ -22,6 +23,11 @@ public abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(CurrentLocationViewModel.class)
     abstract ViewModel bindCurrentLocationFragmentViewModel(CurrentLocationViewModel viewModel);
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(RoadsArchiveViewModel.class)
+    abstract ViewModel bindRoadsArchiveViewModel(RoadsArchiveViewModel viewModel);
 
     @Binds
     @PerActivityScope

@@ -21,6 +21,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.jakewharton.rxbinding2.view.RxView;
 import com.marcin.jasi.roadmemorizer.R;
 import com.marcin.jasi.roadmemorizer.currentLocation.di.DaggerCurrentLocationComponent;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.AlignClickIntent;
@@ -41,13 +42,13 @@ import com.marcin.jasi.roadmemorizer.general.common.presentation.CommonFragment;
 import com.marcin.jasi.roadmemorizer.main.MainActivity;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import timber.log.Timber;
 
 import static com.marcin.jasi.roadmemorizer.general.Constants.CURRENT_LOCATION_FRAGMENT_TITLE;
 
@@ -63,6 +64,9 @@ public class CurrentLocationFragment extends CommonFragment {
     public static final String TITLE = CURRENT_LOCATION_FRAGMENT_TITLE;
     public static final float ZOOM = 15.0f;
     public static final int SCREENSHOT_ROUTE_PADDING = 100;
+
+    public static final int CLICK_DURATION = 1;
+    public static final TimeUnit CLICK_DURATION_UNIT = TimeUnit.SECONDS;
 
     @Inject
     ViewModelProvider.Factory viewModelProvider;
@@ -121,8 +125,15 @@ public class CurrentLocationFragment extends CommonFragment {
     }
 
     private void addButtonsCallbacks() {
-        binding.alignButton.setOnClickListener(v -> viewModel.callEvent(new AlignClickIntent()));
-        binding.saveButton.setOnClickListener(v -> viewModel.callEvent(new SavingButtonClickIntent()));
+        disposable.add(
+                RxView.clicks(binding.alignButton)
+                        .throttleFirst(CLICK_DURATION, CLICK_DURATION_UNIT)
+                        .subscribe(view -> viewModel.callEvent(new AlignClickIntent())));
+
+        disposable.add(
+                RxView.clicks(binding.saveButton)
+                        .throttleFirst(CLICK_DURATION, CLICK_DURATION_UNIT)
+                        .subscribe(view -> viewModel.callEvent(new SavingButtonClickIntent())));
     }
 
     @Override

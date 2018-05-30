@@ -5,6 +5,7 @@ import android.util.Pair;
 import com.google.android.gms.maps.model.LatLng;
 import com.marcin.jasi.roadmemorizer.database.LocationDatabaseRepository;
 import com.marcin.jasi.roadmemorizer.database.data.entities.LocationData;
+import com.marcin.jasi.roadmemorizer.database.data.entities.RoadData;
 import com.marcin.jasi.roadmemorizer.general.common.data.DataMapper;
 
 import java.util.ArrayList;
@@ -24,8 +25,8 @@ public class LocationDatabaseRepositoryImpl implements LocationDatabaseRepositor
         this.entityMapper = entityMapper;
     }
 
-    public Observable<Long> createNewRoad() {
-        return dataSource.createNewRoad();
+    public Observable<Long> insertNewRoad(RoadData data) {
+        return dataSource.insertNewRoad(data);
     }
 
     public Observable<Boolean> saveRoad(List<LatLng> list, long roadId) {
@@ -41,4 +42,8 @@ public class LocationDatabaseRepositoryImpl implements LocationDatabaseRepositor
         return pointsList;
     }
 
+    @Override
+    public Observable<Boolean> updateBitmapFilename(String filename, long roadId) {
+        return dataSource.updateBitmapFilename(filename, roadId);
+    }
 }

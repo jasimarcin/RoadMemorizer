@@ -12,7 +12,7 @@
 
     <fragment
         android:id="@+id/roadsArchiveFragment"
-        android:name="com.marcin.jasi.roadmemorizer.roadsArchive.RoadsArchiveFragment"
+        android:name="com.marcin.jasi.roadmemorizer.roadsArchive.presentation.RoadsArchiveFragment"
         android:label="roads_archive_fragment"
         tools:layout="@layout/roads_archive_fragment"></fragment>
     <action

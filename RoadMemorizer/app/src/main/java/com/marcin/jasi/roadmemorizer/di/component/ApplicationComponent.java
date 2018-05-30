@@ -5,6 +5,7 @@ import android.content.res.Resources;
 
 import com.marcin.jasi.roadmemorizer.Application;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.GetLocationUseCase;
+import com.marcin.jasi.roadmemorizer.database.AppDatabase;
 import com.marcin.jasi.roadmemorizer.di.annotation.FilesDir;
 import com.marcin.jasi.roadmemorizer.di.module.ApplicationModule;
 import com.marcin.jasi.roadmemorizer.di.scope.PerAppScope;
@@ -41,4 +42,5 @@ public interface ApplicationComponent {
 
     Resources resources();
 
+    AppDatabase database();
 }

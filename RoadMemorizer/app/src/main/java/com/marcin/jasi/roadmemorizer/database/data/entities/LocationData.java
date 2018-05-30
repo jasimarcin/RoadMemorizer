@@ -12,11 +12,11 @@ public class LocationData {
     @PrimaryKey(autoGenerate = true)
     public long id;
 
-    private long order;
-    private long roadId;
+    public long order;
+    public long roadId;
 
-    private double lattitude;
-    private double longitude;
+    public double lattitude;
+    public double longitude;
 
     public LocationData(long order, long roadId, double lattitude, double longitude) {
         this.order = order;

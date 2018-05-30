@@ -1,16 +1,13 @@
 package com.marcin.jasi.roadmemorizer.general.view.appToolbar;
 
-import android.support.v7.widget.RecyclerView;
 
 import com.marcin.jasi.roadmemorizer.databinding.RowAppToolbarBinding;
+import com.marcin.jasi.roadmemorizer.general.common.presentation.CommonViewHolder;
 
-public class AppToolbarViewHolder extends RecyclerView.ViewHolder {
-
-    private RowAppToolbarBinding binding;
+public class AppToolbarViewHolder extends CommonViewHolder<RowAppToolbarBinding, RowAppToolbarViewModel> {
 
     public AppToolbarViewHolder(RowAppToolbarBinding binding) {
-        super(binding.getRoot());
-        this.binding = binding;
+        super(binding);
     }
 
     public void bind(RowAppToolbarViewModel viewModel) {

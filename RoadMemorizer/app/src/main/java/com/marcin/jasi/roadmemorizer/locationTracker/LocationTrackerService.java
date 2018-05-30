@@ -65,7 +65,7 @@ public class LocationTrackerService extends Service {
     private LocationProviderListener networkProviderListener;
     private CompositeDisposable disposable = new CompositeDisposable();
     private List<LatLng> pointsList = new ArrayList<>();
-
+    private boolean isSaving = false;
 
     @Override
     public IBinder onBind(Intent arg0) {
@@ -130,6 +130,9 @@ public class LocationTrackerService extends Service {
     }
 
     private void handleSaveRoad() {
+        if (isSaving)
+            return;
+
         if (pointsList.size() < 2) {
             handleStopRecording();
             return;
@@ -140,10 +143,13 @@ public class LocationTrackerService extends Service {
 
     @NonNull
     private Disposable saveRoad() {
+        isSaving = true;
         return saveRoadUseCase.saveRoad(pointsList)
                 .subscribe(this::handleRoadSaved,
-                        Timber::d,
-                        () -> Timber.d("COMPLETABLE"));
+                        error -> {
+                            Timber.d(error);
+                            isSaving = false;
+                        });
     }
 
     private void handleRoadSaved(String bitmapFilename) {
@@ -178,6 +184,8 @@ public class LocationTrackerService extends Service {
     private void handleStopRecording() {
         pointsList = new ArrayList<>();
         dataSource.setIsRecorderRoad(false);
+
+        isSaving = false;
 
         updateNewLocation(dataSource.getLastLocation(),
                 new PointData(dataSource.getLastLocationDirections()));

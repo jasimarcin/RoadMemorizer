@@ -3,4 +3,7 @@
     <dimen name="app_toolbar_padding">5dp</dimen>
     <dimen name="row_app_toolbar_text_size">20sp</dimen>
     <dimen name="align_map_button_margin">20dp</dimen>
+    <dimen name="row_road_padding">15dp</dimen>
+    <dimen name="recycler_view_padding">10dp</dimen>
+    <dimen name="road_row_text_padding">5dp</dimen>
 </resources>
