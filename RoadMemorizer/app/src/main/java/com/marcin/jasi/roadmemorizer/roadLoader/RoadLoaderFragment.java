@@ -8,6 +8,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.Polyline;
 import com.marcin.jasi.roadmemorizer.R;
 import com.marcin.jasi.roadmemorizer.general.common.presentation.CommonFragment;
 
@@ -17,6 +20,13 @@ public class RoadLoaderFragment extends CommonFragment {
     public static final String ROAD_ID_KEY = "roadIdBundleKey";
 
     private RoadLoaderViewModel mViewModel;
+
+    private Marker startMarker;
+    private Marker endMarker;
+    private Polyline polyline;
+
+    private SupportMapFragment supportMapFragment;
+
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -28,6 +38,11 @@ public class RoadLoaderFragment extends CommonFragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mViewModel = ViewModelProviders.of(this).get(RoadLoaderViewModel.class);
+        setupMapFragment();
+    }
+
+    private void setupMapFragment() {
+        supportMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map_view);
     }
 
     @Override

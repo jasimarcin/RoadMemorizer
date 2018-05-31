@@ -75,11 +75,11 @@ public class CurrentLocationFragment extends CommonFragment {
     private CurrentLocationViewModel viewModel;
     private CurrentLocationFragmentBinding binding;
 
+    private SupportMapFragment supportMapFragment;
+
     private Marker startMarker;
     private Marker endMarker;
     private Polyline polyline;
-
-    private SupportMapFragment supportMapFragment;
 
 
     @Override
