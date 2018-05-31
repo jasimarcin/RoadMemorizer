@@ -358,5 +358,4 @@ public class CurrentLocationFragment extends CommonFragment {
         super.onDestroy();
     }
 
-    // https://github.com/akexorcist/Android-GoogleDirectionLibrary
 }

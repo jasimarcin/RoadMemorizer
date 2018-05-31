@@ -29,7 +29,7 @@ import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
 import static com.marcin.jasi.roadmemorizer.general.Constants.ROADS_ARCHIVE_FRAGMENT_TITLE;
-import static com.marcin.jasi.roadmemorizer.roadLoader.presentation.ui.RoadLoaderFragment.ROAD_ID_KEY;
+import static com.marcin.jasi.roadmemorizer.general.Constants.ROAD_ID_KEY;
 
 @PerFragment
 public class RoadsArchiveFragment extends CommonFragment {

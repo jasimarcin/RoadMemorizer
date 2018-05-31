@@ -23,5 +23,5 @@ public abstract class CommonIOUseCase<Output, Input> {
                 .observeOn(postExecutionThread.getScheduler());
     }
 
-    public abstract Observable<Output> buildObservable(Input item);
+    protected abstract Observable<Output> buildObservable(Input item);
 }

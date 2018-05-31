@@ -2,9 +2,13 @@ class Libraries extends Expando {}
 
 def support_version = "27.1.1"
 def dagger_version = "2.12"
+def playServices_version = "15.0.1"
 def glide_version = "4.7.1"
 def room_version = "1.1.0"
 def autoValue_version = "1.2"
+def retrofit_version = "2.3.0"
+def gson = "2.8.0"
+def httpClient_version = "3.4.1"
 
 
 project.ext.libraries = new Libraries()
@@ -14,7 +18,8 @@ libraries.androidSupport = "com.android.support:support-v4:$support_version"
 libraries.androidAppCompat = "com.android.support:appcompat-v7:$support_version"
 libraries.recyclerView = "com.android.support:recyclerview-v7:$support_version"
 
-libraries.playServices = "com.google.android.gms:play-services-maps:10.2.1"
+libraries.playMaps = "com.google.android.gms:play-services-maps:$playServices_version"
+libraries.playPlaces = "com.google.android.gms:play-services-places:$playServices_version"
 libraries.timber = "com.jakewharton.timber:timber:4.7.0"
 libraries.rxbinding = "com.jakewharton.rxbinding2:rxbinding:2.1.1"
 
@@ -38,3 +43,12 @@ libraries.glide = "com.github.bumptech.glide:glide:$glide_version"
 libraries.glideCompiler = "com.github.bumptech.glide:compiler:$glide_version"
 
 libraries.autoValue = "com.google.auto.value:auto-value:$autoValue_version"
+libraries.autoValueGson = 'com.ryanharter.auto.value:auto-value-gson:0.6.0'
+
+libraries.retrofit = "com.squareup.retrofit2:retrofit:$retrofit_version"
+libraries.retrofitAdapter = "com.squareup.retrofit2:adapter-rxjava2:$retrofit_version"
+
+libraries.gson = "com.google.code.gson:gson:$gson"
+
+libraries.okHttpClient = "com.squareup.okhttp3:okhttp:$httpClient_version"
+libraries.gsonConventer = "com.squareup.retrofit2:converter-gson:$retrofit_version"

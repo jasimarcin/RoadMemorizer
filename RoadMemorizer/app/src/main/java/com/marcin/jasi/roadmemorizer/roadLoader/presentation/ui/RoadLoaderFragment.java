@@ -6,30 +6,37 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.PlaceBufferResponse;
+import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.marcin.jasi.roadmemorizer.R;
 import com.marcin.jasi.roadmemorizer.di.scope.PerFragment;
+import com.marcin.jasi.roadmemorizer.general.Constants;
 import com.marcin.jasi.roadmemorizer.general.common.presentation.CommonFragment;
 import com.marcin.jasi.roadmemorizer.main.MainActivity;
 import com.marcin.jasi.roadmemorizer.roadLoader.di.DaggerRoadLoaderComponent;
 import com.marcin.jasi.roadmemorizer.roadLoader.presentation.entity.RoadPack;
 
-import java.util.List;
 
 import javax.inject.Inject;
 
+import io.reactivex.Observable;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import timber.log.Timber;
 
 import static com.marcin.jasi.roadmemorizer.general.Constants.ROADS_LOADER_FRAGMENT_TITLE;
@@ -103,24 +110,57 @@ public class RoadLoaderFragment extends CommonFragment {
         supportMapFragment.getMapAsync(googleMap -> {
             googleMap.clear();
 
-            LatLng startPoint = roadPack.points().get(0);
-            LatLng endPoint = roadPack.points().get(roadPack.points().size() - 1);
-            setupMapComponents(googleMap, startPoint, endPoint, roadPack.points());
+            Polyline polyline = googleMap.addPolyline(new PolylineOptions()
+                    .color(ContextCompat.getColor(getContext(), R.color.colorPrimary)));
 
+            polyline.setPoints(roadPack.points());
+
+            setupMarkers(roadPack, googleMap);
             animateToRoad(roadPack, googleMap);
 
         });
-
     }
 
-    private void setupMapComponents(GoogleMap googleMap, LatLng startPoint, LatLng endPoint, List<LatLng> points) {
-        googleMap.addMarker(new MarkerOptions().position(startPoint));
-        googleMap.addMarker(new MarkerOptions().position(endPoint));
+    private void setupMarkers(RoadPack roadPack, GoogleMap googleMap) {
+        LatLng startPoint = roadPack.points().get(0);
+        LatLng endPoint = roadPack.points().get(roadPack.points().size() - 1);
 
-        Polyline polyline = googleMap.addPolyline(new PolylineOptions()
-                .color(ContextCompat.getColor(getContext(), R.color.colorPrimary)));
+        Marker startMarker = googleMap.addMarker(new MarkerOptions().position(startPoint));
+        Marker endMarker = googleMap.addMarker(new MarkerOptions().position(endPoint));
 
-        polyline.setPoints(points);
+        disposable.add(loadPointInfo(startPoint, startMarker));
+//        disposable.add(loadPointInfo(endPoint, endMarker));
+    }
+
+    private Disposable loadPointInfo(LatLng startPoint, Marker startMarker) {
+        return viewModel
+                .getPlaceId(startPoint)
+                .filter(id -> !id.equals(Constants.EMPTY_STRING))
+                .flatMap(this::getPlaceFromId)
+                .subscribe(place -> {
+                    supportMapFragment.getMapAsync(googleMap -> {
+                        startMarker.setTitle(place.getName().toString());
+                    });
+                }, Timber::d);
+    }
+
+    public Observable<Place> getPlaceFromId(String placeId) {
+        return Observable.create(emitter -> {
+
+            Places.getGeoDataClient(getActivity()).getPlaceById(placeId)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            PlaceBufferResponse places = task.getResult();
+                            Place place = places.get(0);
+                            places.release();
+
+                            emitter.onNext(place);
+                        } else {
+                            emitter.onError(new Exception("Place not found"));
+                        }
+                    });
+
+        });
     }
 
     private void animateToRoad(RoadPack roadPack, GoogleMap googleMap) {

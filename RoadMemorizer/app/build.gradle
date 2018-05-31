@@ -14,6 +14,13 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = ['autovaluegson.defaultCollectionsToEmpty': 'true']
+                arguments = ['autovaluegson.mutableAdaptersWithDefaultSetters': 'true']
+            }
+        }
     }
     buildTypes {
         release {
@@ -36,7 +43,8 @@ dependencies {
     implementation libs.androidSupport
     implementation libs.androidAppCompat
     implementation libs.recyclerView
-    implementation libs.playServices
+    implementation libs.playMaps
+    implementation libs.playPlaces
     implementation libs.timber
     implementation libs.rxbinding
     implementation libs.constraint
@@ -59,5 +67,17 @@ dependencies {
 
     annotationProcessor libs.autoValue
     provided libs.autoValue
+    annotationProcessor libs.autoValueGson
+    provided libs.autoValueGson
+
+    implementation(libs.retrofit) {
+        exclude module: 'okhttp'
+    }
+
+    implementation libs.retrofitAdapter
+
+    implementation libraries.gson
+    implementation libraries.okHttpClient
+    implementation libraries.gsonConventer
 
 }

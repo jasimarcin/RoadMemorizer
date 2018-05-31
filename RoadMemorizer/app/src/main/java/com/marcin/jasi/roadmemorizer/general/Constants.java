@@ -20,4 +20,7 @@ public class Constants {
     public static final String ROADS_ARCHIVE_FRAGMENT_TITLE = "Zapisane trasy";
     public static final String ROADS_LOADER_FRAGMENT_TITLE = "Zapisana trasa";
 
+    public static final String GOOGLE_PLACES_URL = "https://maps.googleapis.com/";
+    public static final String GOOGLE_PLACES_ID_URL = "https://maps.googleapis.com/";
+
 }
