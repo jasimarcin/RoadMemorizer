@@ -24,7 +24,6 @@ import com.marcin.jasi.roadmemorizer.general.helpers.NotificationHelper;
 import dagger.Module;
 import dagger.Provides;
 
-// todo divide on small modules
 @Module
 @PerAppScope
 public class ApplicationModule {
