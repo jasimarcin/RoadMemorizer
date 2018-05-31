@@ -271,12 +271,21 @@ public class LocationTrackerService extends Service {
     }
 
     @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        finishServiceComponents();
+        super.onTaskRemoved(rootIntent);
+    }
+
+    @Override
     public void onDestroy() {
+        finishServiceComponents();
+        super.onDestroy();
+    }
+
+    private void finishServiceComponents() {
         disposable.dispose();
         stopProviders();
         notificationHelper.hideIsRecordingNotification(this);
-
-        super.onDestroy();
     }
 
 }

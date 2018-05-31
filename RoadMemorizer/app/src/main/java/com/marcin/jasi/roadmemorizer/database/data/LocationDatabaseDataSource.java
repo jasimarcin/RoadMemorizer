@@ -6,11 +6,10 @@ import com.marcin.jasi.roadmemorizer.database.data.entities.LocationData;
 import com.marcin.jasi.roadmemorizer.database.data.entities.RoadData;
 import com.marcin.jasi.roadmemorizer.general.common.data.DataMapper;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import io.reactivex.Observable;
+import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
 public class LocationDatabaseDataSource {
@@ -24,9 +23,8 @@ public class LocationDatabaseDataSource {
     }
 
     public Observable<Long> insertNewRoad(RoadData data) {
-        return Observable.fromCallable(() -> appDatabase.roadDao().insertRoad(data));
-//                .subscribeOn(Schedulers.computation())
-//                .observeOn(Schedulers.computation());
+        return Observable.fromCallable(() -> appDatabase.roadDao().insertRoad(data))
+                .subscribeOn(Schedulers.computation());
     }
 
     public Observable<Boolean> saveRoad(List<LocationData> data) {
@@ -35,8 +33,7 @@ public class LocationDatabaseDataSource {
                     appDatabase.locationDao().insertRoad(data);
                     return true;
                 })
-//                .subscribeOn(Schedulers.computation())
-//                .observeOn(Schedulers.computation())
+                .subscribeOn(Schedulers.computation())
                 .onErrorReturn(error -> {
                     Timber.d(error);
                     return false;
@@ -49,8 +46,7 @@ public class LocationDatabaseDataSource {
                     appDatabase.roadDao().uploadRoadFilename(filename, roadId);
                     return true;
                 })
-//                .subscribeOn(Schedulers.computation())
-//                .observeOn(Schedulers.computation())
+                .subscribeOn(Schedulers.computation())
                 .onErrorReturn(error -> {
                     Timber.d(error);
                     return false;
@@ -62,7 +58,5 @@ public class LocationDatabaseDataSource {
                 .fromCallable(() -> appDatabase.locationDao().getRoadPoints(roadId))
                 .map(list -> entityMapper.transform(list));
     }
-
-
 
 }
