@@ -42,7 +42,7 @@
         <service
             android:name=".locationTracker.LocationTrackerService"
             android:exported="false"
-            android:stopWithTask="true" />
+            android:stopWithTask="false" />
 
         <receiver android:name=".receiver.LocationPermissionReceiver">
             <intent-filter>

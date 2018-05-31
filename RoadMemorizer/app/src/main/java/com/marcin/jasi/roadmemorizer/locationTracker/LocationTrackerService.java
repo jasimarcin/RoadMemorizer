@@ -288,4 +288,6 @@ public class LocationTrackerService extends Service {
         notificationHelper.hideIsRecordingNotification(this);
     }
 
+
+
 }

@@ -7,7 +7,12 @@ import com.marcin.jasi.roadmemorizer.Application;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.GetLocationUseCase;
 import com.marcin.jasi.roadmemorizer.database.AppDatabase;
 import com.marcin.jasi.roadmemorizer.di.annotation.FilesDir;
+import com.marcin.jasi.roadmemorizer.di.module.ApiModule;
 import com.marcin.jasi.roadmemorizer.di.module.ApplicationModule;
+import com.marcin.jasi.roadmemorizer.di.module.DataMapperModule;
+import com.marcin.jasi.roadmemorizer.di.module.DataSourceModule;
+import com.marcin.jasi.roadmemorizer.di.module.RestClientModule;
+import com.marcin.jasi.roadmemorizer.di.module.UseCaseModule;
 import com.marcin.jasi.roadmemorizer.di.scope.PerAppScope;
 import com.marcin.jasi.roadmemorizer.general.common.data.LocationProvidersHelper;
 import com.marcin.jasi.roadmemorizer.general.common.data.LocationTrackerMediator;
@@ -24,7 +29,13 @@ import com.marcin.jasi.roadmemorizer.roadsArchive.domain.interactor.GetRoadsList
 import dagger.Component;
 
 @Component(modules = {
-        ApplicationModule.class
+        ApplicationModule.class,
+        RestClientModule.class,
+        ApiModule.class,
+        DataMapperModule.class,
+        DataSourceModule.class,
+        RestClientModule.class,
+        UseCaseModule.class
 })
 @PerAppScope
 public interface ApplicationComponent {
@@ -51,10 +62,6 @@ public interface ApplicationComponent {
     NotificationHelper notificationHelper();
 
     AppDatabase database();
-
-    ThreadExecutor threadExecutor();
-
-    PostExecutionThread postExecutionThread();
 
     GetRoadPackUseCase getRoadPackUseCase();
 
