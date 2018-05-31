@@ -1,0 +1,37 @@
+class Libraries extends Expando {}
+
+def support_version = "27.1.1"
+def dagger_version = "2.12"
+def glide_version = "4.7.1"
+def room_version = "1.1.0"
+
+
+project.ext.libraries = new Libraries()
+def libraries = project.ext.libraries
+
+libraries.androidSupport = "com.android.support:support-v4:$support_version"
+libraries.androidAppCompat = "com.android.support:appcompat-v7:$support_version"
+libraries.recyclerView = "com.android.support:recyclerview-v7:$support_version"
+
+libraries.playServices = "com.google.android.gms:play-services-maps:10.2.1"
+libraries.timber = "com.jakewharton.timber:timber:4.7.0"
+libraries.rxbinding = "com.jakewharton.rxbinding2:rxbinding:2.1.1"
+
+libraries.constraint = "com.android.support.constraint:constraint-layout:1.1.0"
+libraries.lifecycle = "android.arch.lifecycle:extensions:1.1.1"
+libraries.navigation = "android.arch.navigation:navigation-fragment:1.0.0-alpha01"
+libraries.rxjava = "io.reactivex.rxjava2:rxandroid:2.0.2"
+
+libraries.dagger = "com.google.dagger:dagger:$dagger_version"
+libraries.daggerAndroid = "com.google.dagger:dagger-android:$dagger_version"
+libraries.daggerAndroidSupport = "com.google.dagger:dagger-android-support:$dagger_version"
+libraries.daggerCompiler = "com.google.dagger:dagger-compiler:$dagger_version"
+libraries.daggerProcesor = "com.google.dagger:dagger-android-processor:$dagger_version"
+
+
+libraries.roomRuntime = "android.arch.persistence.room:runtime:$room_version"
+libraries.roomCompiler = "android.arch.persistence.room:compiler:$room_version"
+libraries.roomRxJava = "android.arch.persistence.room:rxjava2:$room_version"
+
+libraries.glide = "com.github.bumptech.glide:glide:$glide_version"
+libraries.glideCompiler = "com.github.bumptech.glide:compiler:$glide_version"

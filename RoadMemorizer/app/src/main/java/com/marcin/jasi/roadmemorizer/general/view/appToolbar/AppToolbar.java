@@ -36,6 +36,8 @@ public class AppToolbar extends LinearLayout {
         void onItemClick(AppToolbarData item);
     }
 
+    public static final int ANIMATION_DURATION = 500;
+
     private AppToolbarBinding binding;
     private View popUpLayout;
     private PopupWindow popUpList;
@@ -43,7 +45,6 @@ public class AppToolbar extends LinearLayout {
     private RotateAnimation expandAnimation;
     private List<AppToolbarData> items = new ArrayList<>();
     private AppToolbarAdapter adapter;
-    private RecyclerView recyclerView;
     private AppToolbarListener clickListener;
     private ObservableField<String> header = new ObservableField<>();
     private boolean popUpIsShow;
@@ -87,7 +88,7 @@ public class AppToolbar extends LinearLayout {
     }
 
     private void setupRecyclerView() {
-        recyclerView = popUpLayout.findViewById(R.id.recycler_view);
+        RecyclerView recyclerView = popUpLayout.findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         adapter = new AppToolbarAdapter(items, item -> {
@@ -107,10 +108,9 @@ public class AppToolbar extends LinearLayout {
     private void setOnArrowClickListener() {
         disposable.add(
                 RxView.clicks(binding.arrow)
-                        .throttleFirst(500, TimeUnit.MILLISECONDS)
+                        .throttleFirst(ANIMATION_DURATION, TimeUnit.MILLISECONDS)
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(view -> handleOnArrowClick(),
-                                Timber::d));
+                        .subscribe(view -> handleOnArrowClick(), Timber::d));
     }
 
     private void setupAnimations() {
@@ -121,7 +121,7 @@ public class AppToolbar extends LinearLayout {
     private RotateAnimation getAnimation(int fromDegrees, int toDegrees) {
         RotateAnimation animation = new RotateAnimation(fromDegrees, toDegrees, Animation.RELATIVE_TO_SELF,
                 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-        animation.setDuration(500);
+        animation.setDuration(ANIMATION_DURATION);
         animation.setFillAfter(true);
         animation.setFillEnabled(true);
         animation.setRepeatCount(0);

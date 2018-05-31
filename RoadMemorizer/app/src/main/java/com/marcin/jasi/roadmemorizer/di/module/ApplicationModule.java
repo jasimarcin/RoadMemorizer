@@ -24,6 +24,7 @@ import com.marcin.jasi.roadmemorizer.general.common.data.DataMapper;
 import com.marcin.jasi.roadmemorizer.general.common.data.LocationProvidersHelper;
 import com.marcin.jasi.roadmemorizer.general.common.data.LocationTrackerMediator;
 import com.marcin.jasi.roadmemorizer.general.helpers.BitmapSaveHelper;
+import com.marcin.jasi.roadmemorizer.general.helpers.NotificationHelper;
 import com.marcin.jasi.roadmemorizer.locationTracker.data.LocationSaverServiceDataSource;
 import com.marcin.jasi.roadmemorizer.locationTracker.domain.interactor.SaveRoadUseCase;
 
@@ -124,6 +125,12 @@ public class ApplicationModule {
     @PerAppScope
     Resources provideResources() {
         return application.getResources();
+    }
+
+    @Provides
+    @PerAppScope
+    NotificationHelper provideNotificationHelper() {
+        return new NotificationHelper();
     }
 
 }

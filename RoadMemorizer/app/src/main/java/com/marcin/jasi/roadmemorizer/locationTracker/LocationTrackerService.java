@@ -29,6 +29,7 @@ import com.marcin.jasi.roadmemorizer.general.common.data.entity.GpsProvider;
 import com.marcin.jasi.roadmemorizer.general.common.data.entity.LocationProviderType;
 import com.marcin.jasi.roadmemorizer.general.common.data.entity.NetworkProvider;
 import com.marcin.jasi.roadmemorizer.general.helpers.BitmapSaveHelper;
+import com.marcin.jasi.roadmemorizer.general.helpers.NotificationHelper;
 import com.marcin.jasi.roadmemorizer.locationTracker.data.LocationSaverServiceDataSource;
 import com.marcin.jasi.roadmemorizer.locationTracker.di.DaggerLocationTrackerComponent;
 import com.marcin.jasi.roadmemorizer.locationTracker.domain.interactor.SaveRoadUseCase;
@@ -41,7 +42,6 @@ import javax.inject.Inject;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
 import static com.marcin.jasi.roadmemorizer.general.Constants.ENABLE_NETWORK_PROVIDER;
@@ -60,6 +60,8 @@ public class LocationTrackerService extends Service {
     BitmapSaveHelper bitmapSaveHelper;
     @Inject
     SaveRoadUseCase saveRoadUseCase;
+    @Inject
+    NotificationHelper notificationHelper;
 
     private LocationProviderListener gpsProviderListener;
     private LocationProviderListener networkProviderListener;
@@ -174,21 +176,32 @@ public class LocationTrackerService extends Service {
         if (dataSource.getLastLocationDirections() == null)
             return;
 
-        dataSource.setIsRecorderRoad(true);
+        callIsRecording();
+
         dataSource.getLocationSaverPublisher()
                 .onNext(dataSource.getLastLocationData());
 
         handleRecordingLocationChange(dataSource.getLastLocation());
     }
 
+    private void callIsRecording() {
+        dataSource.setIsRecorderRoad(true);
+        notificationHelper.showIsRecordingNotification(this);
+    }
+
     private void handleStopRecording() {
         pointsList = new ArrayList<>();
-        dataSource.setIsRecorderRoad(false);
+        callIsStopRecording();
 
         isSaving = false;
 
         updateNewLocation(dataSource.getLastLocation(),
                 new PointData(dataSource.getLastLocationDirections()));
+    }
+
+    private void callIsStopRecording() {
+        dataSource.setIsRecorderRoad(false);
+        notificationHelper.hideIsRecordingNotification(this);
     }
 
     private void startProviders() {

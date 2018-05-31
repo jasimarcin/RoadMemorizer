@@ -3,6 +3,7 @@ package com.marcin.jasi.roadmemorizer.locationTracker.di;
 import com.marcin.jasi.roadmemorizer.di.component.ApplicationComponent;
 import com.marcin.jasi.roadmemorizer.di.scope.PerServiceScope;
 import com.marcin.jasi.roadmemorizer.general.common.data.LocationTrackerMediator;
+import com.marcin.jasi.roadmemorizer.general.helpers.NotificationHelper;
 import com.marcin.jasi.roadmemorizer.locationTracker.LocationTrackerService;
 import com.marcin.jasi.roadmemorizer.locationTracker.data.LocationSaverServiceDataSource;
 import com.marcin.jasi.roadmemorizer.locationTracker.domain.interactor.SaveRoadUseCase;
@@ -20,4 +21,6 @@ public interface LocationTrackerComponent {
     LocationSaverServiceDataSource locationTrackerServiceDataSource();
 
     SaveRoadUseCase saveRoadUseCase();
+
+    NotificationHelper notificationHelper();
 }

@@ -12,6 +12,7 @@ import com.marcin.jasi.roadmemorizer.di.scope.PerAppScope;
 import com.marcin.jasi.roadmemorizer.general.common.data.LocationProvidersHelper;
 import com.marcin.jasi.roadmemorizer.general.common.data.LocationTrackerMediator;
 import com.marcin.jasi.roadmemorizer.general.helpers.BitmapSaveHelper;
+import com.marcin.jasi.roadmemorizer.general.helpers.NotificationHelper;
 import com.marcin.jasi.roadmemorizer.locationTracker.data.LocationSaverServiceDataSource;
 import com.marcin.jasi.roadmemorizer.locationTracker.domain.interactor.SaveRoadUseCase;
 
@@ -41,6 +42,8 @@ public interface ApplicationComponent {
     SaveRoadUseCase saveRoadUseCase();
 
     Resources resources();
+
+    NotificationHelper notificationHelper();
 
     AppDatabase database();
 }
