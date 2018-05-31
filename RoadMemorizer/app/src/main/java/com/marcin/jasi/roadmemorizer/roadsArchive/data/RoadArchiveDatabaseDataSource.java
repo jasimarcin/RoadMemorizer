@@ -7,6 +7,8 @@ import com.marcin.jasi.roadmemorizer.roadsArchive.domain.entity.Road;
 
 import java.util.List;
 
+import io.reactivex.Observable;
+
 public class RoadArchiveDatabaseDataSource {
 
     private AppDatabase database;
@@ -18,10 +20,14 @@ public class RoadArchiveDatabaseDataSource {
         this.entityMapper = entityMapper;
     }
 
-    public List<Road> getRoads() {
-        return entityMapper.transform(
-                database.roadDao().getRoads()
-        );
+    public Observable<List<Road>> getRoads() {
+        return Observable.fromCallable(() ->
+                entityMapper.transform(database.roadDao().getRoads()));
+    }
+
+    public Observable<Road> getRoad(long roadId) {
+        return Observable.fromCallable(() ->
+                entityMapper.transform(database.roadDao().getRoad(roadId)));
     }
 
 }

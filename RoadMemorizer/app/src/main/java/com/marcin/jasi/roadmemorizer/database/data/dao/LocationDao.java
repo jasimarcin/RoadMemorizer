@@ -14,16 +14,13 @@ import io.reactivex.Flowable;
 @Dao
 public interface LocationDao {
 
-    @Query("SELECT * FROM LocationData WHERE roadId == :roadId")
+    @Query("SELECT * FROM locationData WHERE roadId == :roadId")
     Flowable<List<LocationData>> getLocations(long roadId);
 
     @Insert
     void insertRoad(List<LocationData> road);
 
-    @Insert
-    void insertLocation(LocationData data);
-
-    @Delete
-    void deleteAll(List<LocationData> list);
+    @Query("SELECT * FROM locationData WHERE roadId == :roadId")
+    List<LocationData> getRoadPoints(long roadId);
 
 }

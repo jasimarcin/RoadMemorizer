@@ -4,8 +4,11 @@ import com.marcin.jasi.roadmemorizer.roadsArchive.domain.entity.Road;
 
 import java.util.List;
 
+import io.reactivex.Observable;
+
 public interface RoadArchiveRepository {
 
-    List<Road> getRoads();
+    Observable<List<Road>> getRoads();
 
+    Observable<Road> getRoad(long id);
 }

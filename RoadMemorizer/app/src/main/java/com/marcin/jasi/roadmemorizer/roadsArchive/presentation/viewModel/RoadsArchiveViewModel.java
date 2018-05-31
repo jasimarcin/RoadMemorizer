@@ -17,13 +17,12 @@ public class RoadsArchiveViewModel extends ViewModel {
     @Inject
     GetRoadsListUseCase getRoadsListUseCase;
 
-
     @Inject
     public RoadsArchiveViewModel() {
     }
 
     public Observable<List<Road>> getRoads() {
-        return getRoadsListUseCase.getRoads();
+        return getRoadsListUseCase.getObservable();
     }
 
 }

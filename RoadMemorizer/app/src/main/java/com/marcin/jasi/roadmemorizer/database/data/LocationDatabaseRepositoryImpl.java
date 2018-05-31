@@ -46,4 +46,9 @@ public class LocationDatabaseRepositoryImpl implements LocationDatabaseRepositor
     public Observable<Boolean> updateBitmapFilename(String filename, long roadId) {
         return dataSource.updateBitmapFilename(filename, roadId);
     }
+
+    @Override
+    public Observable<List<LatLng>> getRoadPoints(long roadId) {
+        return dataSource.getRoadPoints(roadId);
+    }
 }

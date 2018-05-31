@@ -5,7 +5,6 @@ import com.marcin.jasi.roadmemorizer.database.data.entities.RoadData;
 
 import java.util.List;
 
-import io.reactivex.Completable;
 import io.reactivex.Observable;
 
 public interface LocationDatabaseRepository {
@@ -15,4 +14,6 @@ public interface LocationDatabaseRepository {
     Observable<Boolean> saveRoad(List<LatLng> list, long roadId);
 
     Observable<Boolean> updateBitmapFilename(String filename, long roadId);
+
+    Observable<List<LatLng>> getRoadPoints(long roadId);
 }

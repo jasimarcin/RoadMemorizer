@@ -27,7 +27,7 @@
         app:destination="@id/currentLocationFragment" />
     <fragment
         android:id="@+id/roadLoaderFragment"
-        android:name="com.marcin.jasi.roadmemorizer.roadLoader.RoadLoaderFragment"
+        android:name="com.marcin.jasi.roadmemorizer.roadLoader.presentation.ui.RoadLoaderFragment"
         android:label="road_loader_fragment"
         tools:layout="@layout/road_loader_fragment" ></fragment>
 

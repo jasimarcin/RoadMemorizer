@@ -6,14 +6,11 @@ import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.marcin.jasi.roadmemorizer.R;
-import com.marcin.jasi.roadmemorizer.currentLocation.presentation.CurrentLocationFragment;
 import com.marcin.jasi.roadmemorizer.databinding.RoadsArchiveFragmentBinding;
 import com.marcin.jasi.roadmemorizer.di.scope.PerFragment;
 import com.marcin.jasi.roadmemorizer.general.common.presentation.CommonFragment;
@@ -26,25 +23,18 @@ import com.marcin.jasi.roadmemorizer.roadsArchive.presentation.viewModel.RoadsAr
 
 import javax.inject.Inject;
 
-import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
-import io.reactivex.Scheduler;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
-import static android.support.v7.widget.DividerItemDecoration.HORIZONTAL;
 import static com.marcin.jasi.roadmemorizer.general.Constants.ROADS_ARCHIVE_FRAGMENT_TITLE;
-import static com.marcin.jasi.roadmemorizer.roadLoader.RoadLoaderFragment.ROAD_ID_KEY;
+import static com.marcin.jasi.roadmemorizer.roadLoader.presentation.ui.RoadLoaderFragment.ROAD_ID_KEY;
 
 @PerFragment
 public class RoadsArchiveFragment extends CommonFragment {
 
     public static final String TITLE = ROADS_ARCHIVE_FRAGMENT_TITLE;
-
-    public static RoadsArchiveFragment newInstance() {
-        return new RoadsArchiveFragment();
-    }
 
     @Inject
     ViewModelProvider.Factory viewModelProvider;

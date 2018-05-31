@@ -2,7 +2,6 @@ package com.marcin.jasi.roadmemorizer.di.module;
 
 
 import android.arch.persistence.room.Room;
-import android.arch.persistence.room.RoomDatabase;
 import android.content.res.Resources;
 import android.util.Pair;
 
@@ -16,17 +15,31 @@ import com.marcin.jasi.roadmemorizer.database.LocationDatabaseRepository;
 import com.marcin.jasi.roadmemorizer.database.data.LocationDatabaseDataSource;
 import com.marcin.jasi.roadmemorizer.database.data.LocationDatabaseRepositoryImpl;
 import com.marcin.jasi.roadmemorizer.database.data.entities.LocationData;
+import com.marcin.jasi.roadmemorizer.database.data.entities.RoadData;
+import com.marcin.jasi.roadmemorizer.database.data.mapper.LatLngDataMapper;
 import com.marcin.jasi.roadmemorizer.database.data.mapper.LocationDataMapper;
 import com.marcin.jasi.roadmemorizer.di.annotation.FilesDir;
+import com.marcin.jasi.roadmemorizer.di.scope.PerActivityScope;
 import com.marcin.jasi.roadmemorizer.di.scope.PerAppScope;
 import com.marcin.jasi.roadmemorizer.general.Constants;
 import com.marcin.jasi.roadmemorizer.general.common.data.DataMapper;
 import com.marcin.jasi.roadmemorizer.general.common.data.LocationProvidersHelper;
 import com.marcin.jasi.roadmemorizer.general.common.data.LocationTrackerMediator;
+import com.marcin.jasi.roadmemorizer.general.common.schedulers.PostExecutionThread;
+import com.marcin.jasi.roadmemorizer.general.common.schedulers.ThreadExecutor;
+import com.marcin.jasi.roadmemorizer.general.common.schedulers.UiThread;
+import com.marcin.jasi.roadmemorizer.general.common.schedulers.WorkingExecutor;
 import com.marcin.jasi.roadmemorizer.general.helpers.BitmapSaveHelper;
 import com.marcin.jasi.roadmemorizer.general.helpers.NotificationHelper;
 import com.marcin.jasi.roadmemorizer.locationTracker.data.LocationSaverServiceDataSource;
 import com.marcin.jasi.roadmemorizer.locationTracker.domain.interactor.SaveRoadUseCase;
+import com.marcin.jasi.roadmemorizer.roadLoader.interactor.GetRoadPackUseCase;
+import com.marcin.jasi.roadmemorizer.roadsArchive.data.RoadArchiveDatabaseDataSource;
+import com.marcin.jasi.roadmemorizer.roadsArchive.data.RoadArchiveRepositoryImpl;
+import com.marcin.jasi.roadmemorizer.roadsArchive.data.mapper.RoadDataMapper;
+import com.marcin.jasi.roadmemorizer.roadsArchive.domain.entity.Road;
+import com.marcin.jasi.roadmemorizer.roadsArchive.domain.interactor.GetRoadsListUseCase;
+import com.marcin.jasi.roadmemorizer.roadsArchive.domain.repository.RoadArchiveRepository;
 
 import dagger.Module;
 import dagger.Provides;
@@ -111,8 +124,14 @@ public class ApplicationModule {
 
     @Provides
     @PerAppScope
-    LocationDatabaseDataSource provideLocationDatabaseDataSource(AppDatabase database) {
-        return new LocationDatabaseDataSource(database);
+    DataMapper<LocationData, LatLng> provideLatLngDataMapper() {
+        return new LatLngDataMapper();
+    }
+
+    @Provides
+    @PerAppScope
+    LocationDatabaseDataSource provideLocationDatabaseDataSource(AppDatabase database, DataMapper<LocationData, LatLng> entityMapper) {
+        return new LocationDatabaseDataSource(database, entityMapper);
     }
 
     @Provides
@@ -129,8 +148,61 @@ public class ApplicationModule {
 
     @Provides
     @PerAppScope
+    ThreadExecutor provideThreadExecutor() {
+        return new WorkingExecutor();
+    }
+
+    @Provides
+    @PerAppScope
+    PostExecutionThread providePostExecutionThreads() {
+        return new UiThread();
+    }
+
+    @Provides
+    @PerAppScope
     NotificationHelper provideNotificationHelper() {
         return new NotificationHelper();
+    }
+
+    @Provides
+    @PerAppScope
+    GetRoadPackUseCase provideGetRoadPackUseCase(ThreadExecutor threadExecutor,
+                                                 PostExecutionThread postExecutionThread,
+                                                 RoadArchiveRepository repository,
+                                                 LocationDatabaseRepository pointsRepository) {
+        return new GetRoadPackUseCase(threadExecutor,
+                postExecutionThread,
+                repository,
+                pointsRepository);
+    }
+
+    @Provides
+    @PerAppScope
+    public GetRoadsListUseCase provideGetRoadsListUseCase(ThreadExecutor threadExecutor,
+                                                          PostExecutionThread postExecutionThread,
+                                                          RoadArchiveRepository repository) {
+        return new GetRoadsListUseCase(threadExecutor,
+                postExecutionThread,
+                repository);
+    }
+
+    @Provides
+    @PerAppScope
+    public RoadArchiveRepository provideRoadArchiveRepository(RoadArchiveDatabaseDataSource dataSource) {
+        return new RoadArchiveRepositoryImpl(dataSource);
+    }
+
+    @Provides
+    @PerAppScope
+    public RoadArchiveDatabaseDataSource provideRoadArchiveDatabaseDataSource(AppDatabase database,
+                                                                              DataMapper<RoadData, Road> entityMapper) {
+        return new RoadArchiveDatabaseDataSource(database, entityMapper);
+    }
+
+    @Provides
+    @PerAppScope
+    public DataMapper<RoadData, Road> provideRoadArchiveDataMapper(@FilesDir String directory) {
+        return new RoadDataMapper(directory);
     }
 
 }

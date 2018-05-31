@@ -51,6 +51,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 
 import static com.marcin.jasi.roadmemorizer.general.Constants.CURRENT_LOCATION_FRAGMENT_TITLE;
+import static com.marcin.jasi.roadmemorizer.general.Constants.SCREENSHOT_ROUTE_PADDING;
 
 
 @PerFragment
@@ -62,11 +63,9 @@ public class CurrentLocationFragment extends CommonFragment {
 
     public static final String TITLE = CURRENT_LOCATION_FRAGMENT_TITLE;
     public static final float ZOOM = 15.0f;
-    public static final int SCREENSHOT_ROUTE_PADDING = 100;
 
     public static final int CLICK_DURATION = 1;
     public static final TimeUnit CLICK_DURATION_UNIT = TimeUnit.SECONDS;
-
 
     @Inject
     ViewModelProvider.Factory viewModelProvider;

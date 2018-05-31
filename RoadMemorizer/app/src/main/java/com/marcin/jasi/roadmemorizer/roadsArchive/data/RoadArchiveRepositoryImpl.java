@@ -5,6 +5,8 @@ import com.marcin.jasi.roadmemorizer.roadsArchive.domain.repository.RoadArchiveR
 
 import java.util.List;
 
+import io.reactivex.Observable;
+
 public class RoadArchiveRepositoryImpl implements RoadArchiveRepository {
 
     private RoadArchiveDatabaseDataSource dataSource;
@@ -14,9 +16,13 @@ public class RoadArchiveRepositoryImpl implements RoadArchiveRepository {
     }
 
     @Override
-    public List<Road> getRoads() {
+    public Observable<List<Road>> getRoads() {
         return dataSource.getRoads();
     }
 
+    @Override
+    public Observable<Road> getRoad(long id) {
+        return dataSource.getRoad(id);
+    }
 }
 

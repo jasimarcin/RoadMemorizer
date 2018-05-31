@@ -274,6 +274,7 @@ public class LocationTrackerService extends Service {
     public void onDestroy() {
         disposable.dispose();
         stopProviders();
+        notificationHelper.hideIsRecordingNotification(this);
 
         super.onDestroy();
     }

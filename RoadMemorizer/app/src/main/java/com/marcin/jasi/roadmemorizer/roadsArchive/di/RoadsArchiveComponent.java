@@ -5,7 +5,6 @@ import android.arch.lifecycle.ViewModelProvider;
 
 import com.marcin.jasi.roadmemorizer.di.scope.PerFragment;
 import com.marcin.jasi.roadmemorizer.main.di.MainActivityComponent;
-import com.marcin.jasi.roadmemorizer.roadsArchive.domain.interactor.GetRoadsListUseCase;
 import com.marcin.jasi.roadmemorizer.roadsArchive.presentation.RoadsArchiveFragment;
 import com.marcin.jasi.roadmemorizer.roadsArchive.presentation.adapter.RoadsArchiveRecyclerAdapter;
 

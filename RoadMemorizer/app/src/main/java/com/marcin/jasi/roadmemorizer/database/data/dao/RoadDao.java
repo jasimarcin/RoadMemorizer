@@ -14,9 +14,12 @@ public interface RoadDao {
     @Insert
     Long insertRoad(RoadData data);
 
-    @Query("SELECT * FROM RoadData")
+    @Query("SELECT * FROM roadData")
     List<RoadData> getRoads();
 
-    @Query("UPDATE RoadData SET filename = :filename WHERE id = :roadId")
+    @Query("SELECT * FROM roadData WHERE id == :roadId")
+    RoadData getRoad(long roadId);
+
+    @Query("UPDATE roadData SET filename = :filename WHERE id = :roadId")
     void uploadRoadFilename(String filename, Long roadId);
 }
