@@ -1,20 +1,33 @@
 package com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response;
 
-import com.google.android.gms.maps.model.LatLng;
 
-import java.util.List;
-
-// todo autovalue
 public class GenerateScreenshot extends PointsData {
 
     private String screenshotFileName;
 
-    public GenerateScreenshot(LatLng startLocation, LatLng endLocation, List<LatLng> points, String roadId) {
-        super(startLocation, endLocation, points);
-        this.screenshotFileName = roadId;
+    private GenerateScreenshot(Builder builder) {
+        super(builder);
+        screenshotFileName = builder.screenshotFileName;
     }
 
     public String getScreenshotFileName() {
         return screenshotFileName;
+    }
+
+    public static final class Builder extends PointsData.Builder {
+
+        private String screenshotFileName;
+
+        public Builder() {
+        }
+
+        public Builder screenshotFileName(String val) {
+            screenshotFileName = val;
+            return this;
+        }
+
+        public GenerateScreenshot build() {
+            return new GenerateScreenshot(this);
+        }
     }
 }

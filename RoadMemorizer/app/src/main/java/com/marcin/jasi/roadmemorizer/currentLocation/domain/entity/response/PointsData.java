@@ -4,41 +4,45 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
 
-// todo autoValue
 public class PointsData implements LocationSaverEvent {
 
-    private LatLng startLocation;
-    private LatLng endLocation;
+    protected LatLng startLocation;
+    protected LatLng endLocation;
 
-    private List<LatLng> points;
+    protected List<LatLng> points;
 
-    public PointsData(LatLng startLocation, LatLng endLocation, List<LatLng> points) {
-        this.startLocation = startLocation;
-        this.endLocation = endLocation;
-        this.points = points;
+    protected PointsData(Builder builder) {
+        startLocation = builder.startLocation;
+        endLocation = builder.endLocation;
+        points = builder.points;
     }
 
-    public LatLng getStartLocation() {
-        return startLocation;
-    }
 
-    public void setStartLocation(LatLng startLocation) {
-        this.startLocation = startLocation;
-    }
+    public static class Builder {
+        protected LatLng startLocation;
+        protected LatLng endLocation;
+        protected List<LatLng> points;
 
-    public LatLng getEndLocation() {
-        return endLocation;
-    }
+        public Builder() {
+        }
 
-    public void setEndLocation(LatLng endLocation) {
-        this.endLocation = endLocation;
-    }
+        public Builder startLocation(LatLng val) {
+            startLocation = val;
+            return this;
+        }
 
-    public List<LatLng> getPoints() {
-        return points;
-    }
+        public Builder endLocation(LatLng val) {
+            endLocation = val;
+            return this;
+        }
 
-    public void setPoints(List<LatLng> points) {
-        this.points = points;
+        public Builder points(List<LatLng> val) {
+            points = val;
+            return this;
+        }
+
+        public PointsData build() {
+            return new PointsData(this);
+        }
     }
 }

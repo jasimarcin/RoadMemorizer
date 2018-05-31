@@ -1,20 +1,32 @@
 package com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity;
 
-import com.google.android.gms.maps.model.LatLng;
 
-import java.util.List;
-
-// todo autovalue
 public class GenerateScreenshotViewState extends UpdateRoadViewState {
 
     private String screenshotFileName;
 
-    public GenerateScreenshotViewState(List<LatLng> road, LatLng startPoint, LatLng endPoint, boolean align, String screenshotFileName) {
-        super(road, startPoint, endPoint, align);
-        this.screenshotFileName = screenshotFileName;
+    private GenerateScreenshotViewState(Builder builder) {
+        super(builder);
+        screenshotFileName = builder.screenshotFileName;
     }
 
     public String getScreenshotFileName() {
         return screenshotFileName;
+    }
+
+    public static final class Builder extends UpdateRoadViewState.Builder {
+        private String screenshotFileName;
+
+        public Builder() {
+        }
+
+        public Builder screenshotFileName(String val) {
+            screenshotFileName = val;
+            return this;
+        }
+
+        public GenerateScreenshotViewState build() {
+            return new GenerateScreenshotViewState(this);
+        }
     }
 }

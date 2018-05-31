@@ -20,10 +20,6 @@ public class RoadDataMapper implements DataMapper<RoadData, Road> {
         Road road = new Road();
 
         road.setDate(roadData.getDate());
-        road.setEndPointLatitude(roadData.getEndPointLatitude());
-        road.setEndPointLongitude(roadData.getEndPointLongitude());
-        road.setStartPointLatitude(roadData.getStartPointLatitude());
-        road.setStartPointLongitude(roadData.getStartPointLongitude());
         road.setFilePath(String.format("%s/%s", directory, roadData.getFilename()));
         road.setId(roadData.getId());
         road.setPointsQuantity(roadData.getQuantity());

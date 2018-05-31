@@ -1,33 +1,67 @@
 package com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity;
 
-public abstract class CurrentLocationViewState {
 
-    private boolean showSaveButton;
-    private boolean showStopSaveingButton;
-    private boolean showAligmButton;
+public class CurrentLocationViewState {
 
+    protected boolean showSaveButton;
+    protected boolean showStopSavingButton;
+    protected boolean showAlignButton;
 
     public boolean isShowSaveButton() {
         return showSaveButton;
     }
 
     public boolean isShowStopSavingButton() {
-        return showStopSaveingButton;
+        return showStopSavingButton;
     }
 
-    public boolean isShowAligmButton() {
-        return showAligmButton;
+    public boolean isShowAlignButton() {
+        return showAlignButton;
+    }
+
+    protected CurrentLocationViewState(Builder builder) {
+        showSaveButton = builder.showSaveButton;
+        showStopSavingButton = builder.showStopSavingButton;
+        showAlignButton = builder.showAlignButton;
     }
 
     public void setShowSaveButton(boolean showSaveButton) {
         this.showSaveButton = showSaveButton;
     }
 
-    public void setShowStopSaveingButton(boolean showStopSaveingButton) {
-        this.showStopSaveingButton = showStopSaveingButton;
+    public void setShowStopSavingButton(boolean showStopSavingButton) {
+        this.showStopSavingButton = showStopSavingButton;
     }
 
-    public void setShowAligmButton(boolean showAligmButton) {
-        this.showAligmButton = showAligmButton;
+    public void setShowAlignButton(boolean showAlignButton) {
+        this.showAlignButton = showAlignButton;
+    }
+
+    public static class Builder {
+        protected boolean showSaveButton;
+        protected boolean showStopSavingButton;
+        protected boolean showAlignButton;
+
+        public Builder() {
+        }
+
+        public Builder showSaveButton(boolean val) {
+            showSaveButton = val;
+            return this;
+        }
+
+        public Builder showStopSavingButton(boolean val) {
+            showStopSavingButton = val;
+            return this;
+        }
+
+        public Builder showAlignButton(boolean val) {
+            showAlignButton = val;
+            return this;
+        }
+
+        public CurrentLocationViewState build() {
+            return new CurrentLocationViewState(this);
+        }
     }
 }

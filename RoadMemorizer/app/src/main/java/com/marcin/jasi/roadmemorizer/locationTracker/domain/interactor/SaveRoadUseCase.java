@@ -13,7 +13,6 @@ import java.util.Calendar;
 import java.util.List;
 
 import io.reactivex.Observable;
-import io.reactivex.ObservableSource;
 
 import static com.marcin.jasi.roadmemorizer.general.Constants.EMPTY_STRING;
 
@@ -21,6 +20,7 @@ import static com.marcin.jasi.roadmemorizer.general.Constants.EMPTY_STRING;
 public class SaveRoadUseCase {
 
     private LocationDatabaseRepository repository;
+
 
     public SaveRoadUseCase(LocationDatabaseRepository repository) {
         this.repository = repository;
@@ -48,13 +48,11 @@ public class SaveRoadUseCase {
     @NonNull
     private RoadData getRoadData(List<LatLng> points) {
         RoadData road = new RoadData();
+
         road.setDate(Calendar.getInstance().getTimeInMillis());
-        road.setEndPointLattitude(points.get(points.size() - 1).latitude);
-        road.setEndPointLongitude(points.get(points.size() - 1).longitude);
-        road.setStartPointLattitude(points.get(0).latitude);
-        road.setStartPointLongitude(points.get(0).longitude);
         road.setFilename(Constants.EMPTY_STRING);
         road.setQuantity(points.size());
+
         return road;
     }
 

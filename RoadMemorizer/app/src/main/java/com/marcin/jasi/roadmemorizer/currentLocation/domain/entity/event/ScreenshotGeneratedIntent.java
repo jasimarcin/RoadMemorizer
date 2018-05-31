@@ -3,22 +3,26 @@ package com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event;
 
 import android.graphics.Bitmap;
 
-// todo autovalue
-public class ScreenshotGeneratedIntent implements LocationServiceIntent {
+import com.google.auto.value.AutoValue;
 
-    private String screenshotName;
-    private Bitmap bitmap;
+@AutoValue
+public abstract class ScreenshotGeneratedIntent implements LocationServiceIntent {
 
-    public ScreenshotGeneratedIntent(String screenshotName, Bitmap bitmap) {
-        this.screenshotName = screenshotName;
-        this.bitmap = bitmap;
+    public abstract String screenshotName();
+
+    public abstract Bitmap bitmap();
+
+    public static Builder builder() {
+        return new AutoValue_ScreenshotGeneratedIntent.Builder();
     }
 
-    public String getScreenshotName() {
-        return screenshotName;
-    }
 
-    public Bitmap getBitmap() {
-        return bitmap;
+    @AutoValue.Builder
+    public abstract static class Builder {
+        public abstract Builder screenshotName(String screenshotName);
+
+        public abstract Builder bitmap(Bitmap bitmap);
+
+        public abstract ScreenshotGeneratedIntent build();
     }
 }

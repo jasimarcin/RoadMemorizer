@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.marcin.jasi.roadmemorizer.R;
+import com.marcin.jasi.roadmemorizer.currentLocation.presentation.CurrentLocationFragment;
 import com.marcin.jasi.roadmemorizer.databinding.RoadsArchiveFragmentBinding;
 import com.marcin.jasi.roadmemorizer.di.scope.PerFragment;
 import com.marcin.jasi.roadmemorizer.general.common.presentation.CommonFragment;
@@ -38,6 +39,10 @@ public class RoadsArchiveFragment extends CommonFragment {
 
     public static final String TITLE = ROADS_ARCHIVE_FRAGMENT_TITLE;
 
+    public static RoadsArchiveFragment newInstance() {
+        return new RoadsArchiveFragment();
+    }
+
     @Inject
     ViewModelProvider.Factory viewModelProvider;
     @Inject
@@ -51,7 +56,6 @@ public class RoadsArchiveFragment extends CommonFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-
 
         binding = DataBindingUtil.inflate(getLayoutInflater(), R.layout.roads_archive_fragment,
                 container, false);

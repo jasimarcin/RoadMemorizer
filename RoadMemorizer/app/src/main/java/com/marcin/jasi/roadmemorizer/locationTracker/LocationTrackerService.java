@@ -14,7 +14,7 @@ import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.Current
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.LocationServiceIntent;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.SavingButtonClickIntent;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.ScreenshotGeneratedIntent;
-import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.UnconnectReceiverIntent;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.UnconnectedReceiverIntent;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.GenerateScreenshot;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.LocationSaverEvent;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.PointData;
@@ -46,7 +46,6 @@ import timber.log.Timber;
 
 import static com.marcin.jasi.roadmemorizer.general.Constants.ENABLE_NETWORK_PROVIDER;
 
-// todo refactor
 @PerServiceScope
 public class LocationTrackerService extends Service {
 
@@ -120,14 +119,13 @@ public class LocationTrackerService extends Service {
             handleScreenshotGenerated((ScreenshotGeneratedIntent) event);
         } else if (event instanceof CurrentLocationIntent && !dataSource.getIsRecordingRoad()) {
             startProviders();
-        } else if (event instanceof UnconnectReceiverIntent && !dataSource.getIsRecordingRoad()) {
+        } else if (event instanceof UnconnectedReceiverIntent && !dataSource.getIsRecordingRoad()) {
             stopProviders();
         }
     }
 
     private void handleScreenshotGenerated(ScreenshotGeneratedIntent event) {
-        bitmapSaveHelper.trySaveBitmap(event.getBitmap(),
-                event.getScreenshotName());
+        bitmapSaveHelper.trySaveBitmap(event.bitmap(), event.screenshotName());
         handleStopRecording();
     }
 
@@ -161,10 +159,12 @@ public class LocationTrackerService extends Service {
         }
 
         dataSource.getLocationSaverPublisher()
-                .onNext(new GenerateScreenshot(pointsList.get(0),
-                        pointsList.get(pointsList.size() - 1),
-                        pointsList,
-                        bitmapFilename));
+                .onNext(new GenerateScreenshot.Builder()
+                        .screenshotFileName(bitmapFilename)
+                        .endLocation(pointsList.get(pointsList.size() - 1))
+                        .startLocation(pointsList.get(0))
+                        .points(pointsList)
+                        .build());
     }
 
     private void sendSavingError() {
@@ -196,7 +196,8 @@ public class LocationTrackerService extends Service {
         isSaving = false;
 
         updateNewLocation(dataSource.getLastLocation(),
-                new PointData(dataSource.getLastLocationDirections()));
+                new PointData.Builder()
+                        .point(dataSource.getLastLocationDirections()).build());
     }
 
     private void callIsStopRecording() {
@@ -231,17 +232,19 @@ public class LocationTrackerService extends Service {
         LatLng locationDirections = new LatLng(location.getLatitude(), location.getLongitude());
         pointsList.add(locationDirections);
 
-        LocationSaverEvent locationSaverEvent = new PointsData(
-                pointsList.get(0),
-                locationDirections,
-                pointsList);
+        LocationSaverEvent locationSaverEvent = new PointsData.Builder()
+                .endLocation(locationDirections)
+                .startLocation(pointsList.get(0))
+                .points(pointsList)
+                .build();
 
         updateNewLocation(location, locationSaverEvent);
     }
 
     private void handleCurrentLocationChange(Location location) {
         LatLng locationDirections = new LatLng(location.getLatitude(), location.getLongitude());
-        LocationSaverEvent locationSaverEvent = new PointData(locationDirections);
+        LocationSaverEvent locationSaverEvent = new PointData.Builder()
+                .point(locationDirections).build();
 
         updateNewLocation(location, locationSaverEvent);
     }

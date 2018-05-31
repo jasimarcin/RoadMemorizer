@@ -1,4 +1,4 @@
 package com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event;
 
-public class UnconnectReceiverIntent implements LocationServiceIntent {
+public class UnconnectedReceiverIntent implements LocationServiceIntent {
 }

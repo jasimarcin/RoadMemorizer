@@ -20,6 +20,7 @@ public class GetLocationUseCase {
     }
 
     private void receiveEvent(LocationServiceIntent event) {
+        Timber.d("LOCATION EVENT REQUEST %s", event.getClass().getName());
         repository.getLocationEventPublisher()
                 .onNext(event);
     }

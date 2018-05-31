@@ -8,7 +8,6 @@ import com.marcin.jasi.roadmemorizer.currentLocation.domain.GetLocationUseCase;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.AlignClickIntent;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.LocationServiceIntent;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.MoveCameraIntent;
-import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.SavingButtonClickIntent;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.GenerateScreenshot;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.LocationSaverEvent;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.response.PointData;
@@ -21,7 +20,6 @@ import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.Generat
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.IdleViewState;
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.UpdatePointViewState;
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.UpdateRoadViewState;
-import com.marcin.jasi.roadmemorizer.general.helpers.PermissionHelper;
 
 import javax.inject.Inject;
 
@@ -29,17 +27,14 @@ import io.reactivex.Observable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.subjects.PublishSubject;
 
-// todo refactor
 public class CurrentLocationViewModel extends ViewModel {
 
     @Inject
     GetLocationUseCase getLocationUseCase;
     @Inject
-    PermissionHelper permissionHelper;
-    @Inject
     Resources resources;
 
-    private CompositeDisposable disposable;
+    private CompositeDisposable disposable = new CompositeDisposable();
     private PublishSubject<CurrentLocationViewState> viewStatePublisher = PublishSubject.create();
     private boolean cameraMoved = false;
     private boolean isAnimating = false;
@@ -50,15 +45,19 @@ public class CurrentLocationViewModel extends ViewModel {
     }
 
     public void init() {
-        if (disposable != null)
-            disposable.dispose();
-
-        disposable = new CompositeDisposable();
+        refreshDisposable();
 
         disposable.add(getNewLocationObservable()
                 .subscribe(locationEvent -> publishWrappedViewState(dataMapperMethod(locationEvent))));
 
         disposable.add(getLocationUseCase.connectEventsReceiver());
+    }
+
+    private void refreshDisposable() {
+        if (disposable != null)
+            disposable.dispose();
+
+        disposable = new CompositeDisposable();
     }
 
     private Observable<LocationSaverEvent> getNewLocationObservable() {
@@ -82,7 +81,7 @@ public class CurrentLocationViewModel extends ViewModel {
         if (gotLastLocation()) {
 
             CurrentLocationViewState viewState = getLastState();
-            viewState.setShowAligmButton(true);
+            viewState.setShowAlignButton(true);
 
             publishWrappedViewState(viewState);
             cameraMoved = true;
@@ -91,7 +90,11 @@ public class CurrentLocationViewModel extends ViewModel {
 
     private void handleAlignClick() {
         this.cameraMoved = false;
-        publishWrappedViewState(new AlignMap(getLocationUseCase.getLastLocation()));
+        publishWrappedViewState(
+                new AlignMap.Builder()
+                        .alignPoint(getLocationUseCase.getLastLocation())
+                        .build()
+        );
     }
 
     private void publishWrappedViewState(CurrentLocationViewState viewState) {
@@ -100,33 +103,39 @@ public class CurrentLocationViewModel extends ViewModel {
 
     private CurrentLocationViewState dataMapperMethod(LocationSaverEvent locationEvent) {
         if (locationEvent instanceof SavingRoadError) {
-            return new ErrorViewState(resources.getString(R.string.save_road_error_message));
+            return new ErrorViewState.Builder()
+                    .message(resources.getString(R.string.save_road_error_message))
+                    .build();
         }
 
         if (locationEvent instanceof GenerateScreenshot) {
-            return new GenerateScreenshotViewState(
-                    ((PointsData) locationEvent).getPoints(),
-                    ((PointsData) locationEvent).getStartLocation(),
-                    ((PointsData) locationEvent).getEndLocation(),
-                    canAlignMap(),
-                    ((GenerateScreenshot) locationEvent).getScreenshotFileName());
+            return new GenerateScreenshotViewState.Builder()
+                    .screenshotFileName(((GenerateScreenshot) locationEvent).getScreenshotFileName())
+                    .startPoint(((PointsData) locationEvent).getStartLocation())
+                    .endPoint(((PointsData) locationEvent).getEndLocation())
+                    .road(((PointsData) locationEvent).getPoints())
+                    .align(canAlignMap())
+                    .build();
+
         }
 
         if (locationEvent instanceof PointData) {
-            return new UpdatePointViewState(
-                    ((PointData) locationEvent).getPoint(),
-                    canAlignMap());
+            return new UpdatePointViewState.Builder()
+                    .point(((PointData) locationEvent).getPoint())
+                    .align(canAlignMap())
+                    .build();
         }
 
         if (locationEvent instanceof PointsData) {
-            return new UpdateRoadViewState(
-                    ((PointsData) locationEvent).getPoints(),
-                    ((PointsData) locationEvent).getStartLocation(),
-                    ((PointsData) locationEvent).getEndLocation(),
-                    canAlignMap());
+            return new UpdateRoadViewState.Builder()
+                    .endPoint(((PointsData) locationEvent).getEndLocation())
+                    .startPoint(((PointsData) locationEvent).getStartLocation())
+                    .align(canAlignMap())
+                    .road(((PointsData) locationEvent).getPoints())
+                    .build();
         }
 
-        return new IdleViewState();
+        return new IdleViewState.Builder().build();
     }
 
     private boolean canAlignMap() {
@@ -138,10 +147,10 @@ public class CurrentLocationViewModel extends ViewModel {
     }
 
     private CurrentLocationViewState wrapButtonsStats(CurrentLocationViewState viewState) {
-        viewState.setShowAligmButton(cameraMoved);
+        viewState.setShowAlignButton(cameraMoved);
 
         viewState.setShowSaveButton(validateIfShowSaveButton());
-        viewState.setShowStopSaveingButton(validateIfShowStopSavingButton());
+        viewState.setShowStopSavingButton(validateIfShowStopSavingButton());
 
         return viewState;
     }

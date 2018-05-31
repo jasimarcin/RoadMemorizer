@@ -29,7 +29,7 @@ import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.Current
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.MoveCameraIntent;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.SavingButtonClickIntent;
 import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.ScreenshotGeneratedIntent;
-import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.UnconnectReceiverIntent;
+import com.marcin.jasi.roadmemorizer.currentLocation.domain.entity.event.UnconnectedReceiverIntent;
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.AlignMap;
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.CurrentLocationViewState;
 import com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity.ErrorViewState;
@@ -53,7 +53,6 @@ import io.reactivex.disposables.Disposable;
 import static com.marcin.jasi.roadmemorizer.general.Constants.CURRENT_LOCATION_FRAGMENT_TITLE;
 
 
-// todo big refactor
 @PerFragment
 public class CurrentLocationFragment extends CommonFragment {
 
@@ -67,6 +66,7 @@ public class CurrentLocationFragment extends CommonFragment {
 
     public static final int CLICK_DURATION = 1;
     public static final TimeUnit CLICK_DURATION_UNIT = TimeUnit.SECONDS;
+
 
     @Inject
     ViewModelProvider.Factory viewModelProvider;
@@ -86,7 +86,6 @@ public class CurrentLocationFragment extends CommonFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
 
-
         binding = DataBindingUtil.inflate(getLayoutInflater(), R.layout.current_location_fragment,
                 container, false);
 
@@ -103,8 +102,19 @@ public class CurrentLocationFragment extends CommonFragment {
                 .of(this, viewModelProvider)
                 .get(CurrentLocationViewModel.class);
 
+        refreshDisposable();
         setupMapFragment();
         addButtonsCallbacks();
+        viewModel.init();
+        disposable.add(handleMapEvents());
+    }
+
+    @Override
+    public void onDestroyView() {
+        disposable.dispose();
+        viewModel.dispose();
+
+        super.onDestroyView();
     }
 
     private void initDependencies() {
@@ -128,19 +138,21 @@ public class CurrentLocationFragment extends CommonFragment {
         disposable.add(
                 RxView.clicks(binding.alignButton)
                         .throttleFirst(CLICK_DURATION, CLICK_DURATION_UNIT)
+                        .filter(view -> viewModel != null)
                         .subscribe(view -> viewModel.callEvent(new AlignClickIntent())));
 
         disposable.add(
                 RxView.clicks(binding.saveButton)
                         .throttleFirst(CLICK_DURATION, CLICK_DURATION_UNIT)
+                        .filter(view -> viewModel != null)
                         .subscribe(view -> viewModel.callEvent(new SavingButtonClickIntent())));
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        viewModel.init();
-        disposable.add(handleMapEvents());
+    private void refreshDisposable() {
+        if (disposable != null)
+            disposable.dispose();
+
+        disposable = new CompositeDisposable();
     }
 
     @NonNull
@@ -215,7 +227,10 @@ public class CurrentLocationFragment extends CommonFragment {
 
     private void takeScreenshot(GoogleMap googleMap, GenerateScreenshotViewState event, ScreenshotListener listener) {
         googleMap.snapshot(bitmap -> {
-            viewModel.callEvent(new ScreenshotGeneratedIntent(event.getScreenshotFileName(), bitmap));
+            viewModel.callEvent(ScreenshotGeneratedIntent.builder()
+                    .bitmap(bitmap)
+                    .screenshotName(event.getScreenshotFileName()).build());
+
             listener.screenshotGenerated();
         });
     }
@@ -270,7 +285,7 @@ public class CurrentLocationFragment extends CommonFragment {
     }
 
     private void updateAlignButton(CurrentLocationViewState event) {
-        if (event.isShowAligmButton()) {
+        if (event.isShowAlignButton()) {
             binding.alignButton.setVisibility(View.VISIBLE);
         } else {
             binding.alignButton.setVisibility(View.GONE);
@@ -304,6 +319,7 @@ public class CurrentLocationFragment extends CommonFragment {
         if (startMarker == null && point != null) {
             startMarker = googleMap.addMarker(new MarkerOptions().position(point));
             startMarker.setVisible(true);
+
         } else if (startMarker != null && point != null) {
             startMarker.setPosition(point);
             startMarker.setVisible(true);
@@ -323,14 +339,6 @@ public class CurrentLocationFragment extends CommonFragment {
         return TITLE;
     }
 
-
-    @Override
-    public void onDestroy() {
-        viewModel.dispose();
-        disposable.dispose();
-        super.onDestroy();
-    }
-
     @Override
     public void onResume() {
         super.onResume();
@@ -339,8 +347,16 @@ public class CurrentLocationFragment extends CommonFragment {
 
     @Override
     public void onPause() {
-        viewModel.callEvent(new UnconnectReceiverIntent());
+        viewModel.callEvent(new UnconnectedReceiverIntent());
         super.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        disposable.dispose();
+        viewModel.dispose();
+
+        super.onDestroy();
     }
 
     // https://github.com/akexorcist/Android-GoogleDirectionLibrary

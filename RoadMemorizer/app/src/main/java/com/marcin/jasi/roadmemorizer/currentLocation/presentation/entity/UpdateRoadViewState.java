@@ -1,25 +1,23 @@
 package com.marcin.jasi.roadmemorizer.currentLocation.presentation.entity;
 
-import android.util.Pair;
-
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
 
-// todo autovalue
-// todo datamapper
+
 public class UpdateRoadViewState extends CurrentLocationViewState {
 
-    private List<LatLng> road;
-    private LatLng startPoint;
-    private LatLng endPoint;
-    private boolean align;
+    protected List<LatLng> road;
+    protected LatLng startPoint;
+    protected LatLng endPoint;
+    protected boolean align;
 
-    public UpdateRoadViewState(List<LatLng> road, LatLng startPoint, LatLng endPoint, boolean align) {
-        this.road = road;
-        this.startPoint = startPoint;
-        this.endPoint = endPoint;
-        this.align = align;
+    protected UpdateRoadViewState(Builder builder) {
+        super(builder);
+        road = builder.road;
+        startPoint = builder.startPoint;
+        endPoint = builder.endPoint;
+        align = builder.align;
     }
 
     public List<LatLng> getRoad() {
@@ -36,5 +34,39 @@ public class UpdateRoadViewState extends CurrentLocationViewState {
 
     public boolean isAlign() {
         return align;
+    }
+
+    public static class Builder extends CurrentLocationViewState.Builder {
+        protected List<LatLng> road;
+        protected LatLng startPoint;
+        protected LatLng endPoint;
+        protected boolean align;
+
+        public Builder() {
+        }
+
+        public Builder road(List<LatLng> val) {
+            road = val;
+            return this;
+        }
+
+        public Builder startPoint(LatLng val) {
+            startPoint = val;
+            return this;
+        }
+
+        public Builder endPoint(LatLng val) {
+            endPoint = val;
+            return this;
+        }
+
+        public Builder align(boolean val) {
+            align = val;
+            return this;
+        }
+
+        public UpdateRoadViewState build() {
+            return new UpdateRoadViewState(this);
+        }
     }
 }

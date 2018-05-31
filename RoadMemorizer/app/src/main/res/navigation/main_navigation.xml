@@ -14,12 +14,25 @@
         android:id="@+id/roadsArchiveFragment"
         android:name="com.marcin.jasi.roadmemorizer.roadsArchive.presentation.RoadsArchiveFragment"
         android:label="roads_archive_fragment"
-        tools:layout="@layout/roads_archive_fragment"></fragment>
+        tools:layout="@layout/roads_archive_fragment">
+        <action
+            android:id="@+id/action_roadsArchiveFragment_to_roadLoaderFragment"
+            app:destination="@id/roadLoaderFragment" />
+    </fragment>
     <action
         android:id="@+id/action_global_roadsArchiveFragment"
         app:destination="@id/roadsArchiveFragment" />
     <action
         android:id="@+id/action_global_currentLocationFragment"
         app:destination="@id/currentLocationFragment" />
+    <fragment
+        android:id="@+id/roadLoaderFragment"
+        android:name="com.marcin.jasi.roadmemorizer.roadLoader.RoadLoaderFragment"
+        android:label="road_loader_fragment"
+        tools:layout="@layout/road_loader_fragment" >
+        <argument
+            android:name="roadId"
+            app:type="integer" />
+    </fragment>
 
 </navigation>

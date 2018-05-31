@@ -51,7 +51,7 @@ public class LocationSaverServiceDataSource {
         return isRecorderRoad.get();
     }
 
-    public void setIsRecorderRoad(boolean isRecorderRoad) {
+    public void  setIsRecorderRoad(boolean isRecorderRoad) {
         this.isRecorderRoad.set(isRecorderRoad);
     }
 

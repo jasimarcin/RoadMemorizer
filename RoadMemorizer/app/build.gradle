@@ -57,4 +57,7 @@ dependencies {
     implementation libs.glide
     annotationProcessor libs.glideCompiler
 
+    annotationProcessor libs.autoValue
+    provided libs.autoValue
+
 }

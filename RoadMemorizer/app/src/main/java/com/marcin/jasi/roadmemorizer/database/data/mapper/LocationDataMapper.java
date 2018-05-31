@@ -11,9 +11,18 @@ import java.util.List;
 
 public class LocationDataMapper implements DataMapper<Pair<LatLng, Long>, LocationData> {
 
+    private static final int FIRST_ROAD_ELEMENT = 0;
+
     @Override
     public LocationData transform(Pair<LatLng, Long> data) {
-        return new LocationData(0, data.second, data.first.latitude, data.first.longitude);
+        LocationData locationData = new LocationData();
+
+        locationData.setRoadId(data.second);
+        locationData.setOrder(FIRST_ROAD_ELEMENT);
+        locationData.setLatitude(data.first.latitude);
+        locationData.setLongitude(data.first.longitude);
+
+        return locationData;
     }
 
     @Override
@@ -21,11 +30,14 @@ public class LocationDataMapper implements DataMapper<Pair<LatLng, Long>, Locati
         List<LocationData> dataList = new ArrayList<>();
 
         for (int id = 0; id < from.size(); id++) {
-            dataList.add(new LocationData(
-                    id,
-                    from.get(id).second,
-                    from.get(id).first.latitude,
-                    from.get(id).first.longitude));
+            LocationData locationData = new LocationData();
+
+            locationData.setRoadId(from.get(id).second);
+            locationData.setOrder(id);
+            locationData.setLatitude(from.get(id).first.latitude);
+            locationData.setLongitude(from.get(id).first.longitude);
+
+            dataList.add(locationData);
         }
 
         return dataList;

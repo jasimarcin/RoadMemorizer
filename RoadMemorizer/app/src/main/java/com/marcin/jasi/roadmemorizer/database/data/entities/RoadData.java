@@ -1,22 +1,33 @@
 package com.marcin.jasi.roadmemorizer.database.data.entities;
 
+import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 
-// todo autovalue
-@Entity
+@Entity(tableName = RoadData.Struct.TABLE_NAME)
 public class RoadData {
 
-    @PrimaryKey(autoGenerate = true)
-    public long id;
+    static class Struct {
+        public static final String TABLE_NAME = "roadData";
+        public static final String ID_KEY = "id";
+        public static final String DATE_KEY = "date";
+        public static final String FILENAME_KEY = "filename";
+        public static final String QUANTITY_KEY = "quantity";
+    }
 
-    public long date;
-    public double startPointLattitude;
-    public double startPointLongitude;
-    public double endPointLattitude;
-    public double endPointLongitude;
-    public String filename;
-    public long quantity;
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = Struct.ID_KEY)
+    private long id;
+
+    @ColumnInfo(name = Struct.DATE_KEY)
+    private long date;
+
+    @ColumnInfo(name = Struct.FILENAME_KEY)
+    private String filename;
+
+    @ColumnInfo(name = Struct.QUANTITY_KEY)
+    private long quantity;
+
 
     public long getQuantity() {
         return quantity;
@@ -50,35 +61,4 @@ public class RoadData {
         this.filename = filename;
     }
 
-    public double getStartPointLatitude() {
-        return startPointLattitude;
-    }
-
-    public void setStartPointLattitude(double startPointLattitude) {
-        this.startPointLattitude = startPointLattitude;
-    }
-
-    public double getStartPointLongitude() {
-        return startPointLongitude;
-    }
-
-    public void setStartPointLongitude(double startPointLongitude) {
-        this.startPointLongitude = startPointLongitude;
-    }
-
-    public double getEndPointLatitude() {
-        return endPointLattitude;
-    }
-
-    public void setEndPointLattitude(double endPointLattitude) {
-        this.endPointLattitude = endPointLattitude;
-    }
-
-    public double getEndPointLongitude() {
-        return endPointLongitude;
-    }
-
-    public void setEndPointLongitude(double endPointLongitude) {
-        this.endPointLongitude = endPointLongitude;
-    }
 }
