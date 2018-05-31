@@ -17,6 +17,17 @@ public class PointsData implements LocationSaverEvent {
         points = builder.points;
     }
 
+    public LatLng getStartLocation() {
+        return startLocation;
+    }
+
+    public LatLng getEndLocation() {
+        return endLocation;
+    }
+
+    public List<LatLng> getPoints() {
+        return points;
+    }
 
     public static class Builder {
         protected LatLng startLocation;
