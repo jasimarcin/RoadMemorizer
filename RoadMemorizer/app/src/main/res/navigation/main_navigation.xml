@@ -29,10 +29,6 @@
         android:id="@+id/roadLoaderFragment"
         android:name="com.marcin.jasi.roadmemorizer.roadLoader.RoadLoaderFragment"
         android:label="road_loader_fragment"
-        tools:layout="@layout/road_loader_fragment" >
-        <argument
-            android:name="roadId"
-            app:type="integer" />
-    </fragment>
+        tools:layout="@layout/road_loader_fragment" ></fragment>
 
 </navigation>

@@ -6,6 +6,7 @@ import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
 import android.util.Pair;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import com.marcin.jasi.roadmemorizer.R;
@@ -25,9 +26,13 @@ import io.reactivex.schedulers.Schedulers;
 
 public class RoadsArchiveRecyclerAdapter extends RecyclerView.Adapter<RoadsArchiveViewHolder> {
 
+    public interface RowClickListener {
+        void onRowClick(long roadId);
+    }
+
     private DataMapper<Road, RoadRowViewModel> entityMapper;
     private List<Road> items = new ArrayList<>();
-
+    private RowClickListener listener;
 
     public RoadsArchiveRecyclerAdapter(DataMapper<Road, RoadRowViewModel> entityMapper) {
         this.entityMapper = entityMapper;
@@ -45,7 +50,10 @@ public class RoadsArchiveRecyclerAdapter extends RecyclerView.Adapter<RoadsArchi
     @Override
     public void onBindViewHolder(@NonNull RoadsArchiveViewHolder holder, int position) {
         holder.bind(entityMapper.transform(items.get(position)));
-//        holder.itemView.setOnClickListener();
+        holder.itemView.setOnClickListener(view -> {
+            if (listener != null)
+                listener.onRowClick(items.get(position).getId());
+        });
     }
 
     @Override
@@ -76,10 +84,8 @@ public class RoadsArchiveRecyclerAdapter extends RecyclerView.Adapter<RoadsArchi
 
             @Override
             public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
-                return items.get(oldItemPosition).getEndPointLatitude() == newItems.get(newItemPosition).getEndPointLatitude() &&
-                        items.get(oldItemPosition).getEndPointLongitude() == newItems.get(newItemPosition).getEndPointLongitude() &&
-                        items.get(oldItemPosition).getStartPointLatitude() == newItems.get(newItemPosition).getStartPointLatitude() &&
-                        items.get(oldItemPosition).getStartPointLongitude() == newItems.get(newItemPosition).getStartPointLongitude() &&
+                return items.get(oldItemPosition).getPointsQuantity() == newItems.get(newItemPosition).getPointsQuantity() &&
+                        items.get(oldItemPosition).getDate() == newItems.get(newItemPosition).getDate() &&
                         items.get(oldItemPosition).getFilePath().equals(newItems.get(newItemPosition).getFilePath());
             }
         });
@@ -95,5 +101,9 @@ public class RoadsArchiveRecyclerAdapter extends RecyclerView.Adapter<RoadsArchi
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> result.dispatchUpdatesTo(this));
+    }
+
+    public void setListener(RowClickListener listener) {
+        this.listener = listener;
     }
 }

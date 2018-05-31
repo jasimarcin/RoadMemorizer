@@ -26,6 +26,8 @@ import com.marcin.jasi.roadmemorizer.roadsArchive.presentation.viewModel.RoadsAr
 
 import javax.inject.Inject;
 
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import io.reactivex.Scheduler;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
@@ -33,6 +35,7 @@ import timber.log.Timber;
 
 import static android.support.v7.widget.DividerItemDecoration.HORIZONTAL;
 import static com.marcin.jasi.roadmemorizer.general.Constants.ROADS_ARCHIVE_FRAGMENT_TITLE;
+import static com.marcin.jasi.roadmemorizer.roadLoader.RoadLoaderFragment.ROAD_ID_KEY;
 
 @PerFragment
 public class RoadsArchiveFragment extends CommonFragment {
@@ -77,6 +80,15 @@ public class RoadsArchiveFragment extends CommonFragment {
                 (int) getResources().getDimension(R.dimen.recycler_view_padding), true));
         binding.recyclerView.setLayoutManager(new LinearLayoutManagerWrapper(getContext()));
         binding.recyclerView.setAdapter(adapter);
+        adapter.setListener(this::openRoadLoadFragment);
+    }
+
+    private void openRoadLoadFragment(long roadId) {
+        Bundle bundle = new Bundle();
+        bundle.putLong(ROAD_ID_KEY, roadId);
+
+        Navigation.findNavController(getActivity(), R.id.nav_host_fragment)
+                .navigate(R.id.action_roadsArchiveFragment_to_roadLoaderFragment, bundle);
     }
 
     private void initDependencies() {

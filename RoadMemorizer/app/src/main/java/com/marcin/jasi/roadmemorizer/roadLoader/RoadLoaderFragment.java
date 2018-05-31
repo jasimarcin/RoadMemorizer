@@ -13,13 +13,10 @@ import com.marcin.jasi.roadmemorizer.general.common.presentation.CommonFragment;
 
 public class RoadLoaderFragment extends CommonFragment {
 
-    public static final String TITLE = "";
+    public static final String TITLE = "Zapisana trasa";
+    public static final String ROAD_ID_KEY = "roadIdBundleKey";
 
     private RoadLoaderViewModel mViewModel;
-
-    public static RoadLoaderFragment newInstance() {
-        return new RoadLoaderFragment();
-    }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
