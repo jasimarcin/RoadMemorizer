@@ -24,6 +24,8 @@ import com.marcin.jasi.roadmemorizer.general.helpers.NotificationHelper;
 import dagger.Module;
 import dagger.Provides;
 
+import static com.marcin.jasi.roadmemorizer.general.Constants.API_KEY_NAME;
+
 @Module
 @PerAppScope
 public class ApplicationModule {
@@ -103,13 +105,13 @@ public class ApplicationModule {
             ApplicationInfo appInfo = context.getPackageManager().getApplicationInfo(
                     context.getPackageName(), PackageManager.GET_META_DATA);
             if (appInfo.metaData != null) {
-                return appInfo.metaData.getString("com.google.android.maps.v2.API_KEY");
+                return appInfo.metaData.getString(API_KEY_NAME);
             }
         } catch (PackageManager.NameNotFoundException e) {
-            return "";
+            return Constants.EMPTY_STRING;
         }
 
-        return "";
+        return Constants.EMPTY_STRING;
     }
 
 

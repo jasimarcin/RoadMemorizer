@@ -14,12 +14,10 @@ import com.marcin.jasi.roadmemorizer.database.data.entities.RoadData;
 import com.marcin.jasi.roadmemorizer.di.annotation.ApiKey;
 import com.marcin.jasi.roadmemorizer.di.scope.PerAppScope;
 import com.marcin.jasi.roadmemorizer.general.common.data.DataMapper;
-import com.marcin.jasi.roadmemorizer.general.common.schedulers.PostExecutionThread;
 import com.marcin.jasi.roadmemorizer.general.common.schedulers.ThreadExecutor;
 import com.marcin.jasi.roadmemorizer.locationTracker.data.LocationSaverServiceDataSource;
 import com.marcin.jasi.roadmemorizer.roadLoader.data.dataSource.PlacesApi;
 import com.marcin.jasi.roadmemorizer.roadLoader.data.dataSource.PlacesCloudDataSource;
-import com.marcin.jasi.roadmemorizer.roadLoader.interactor.GetPlaceIdUseCase;
 import com.marcin.jasi.roadmemorizer.roadsArchive.data.RoadArchiveDatabaseDataSource;
 import com.marcin.jasi.roadmemorizer.roadsArchive.data.RoadArchiveRepositoryImpl;
 import com.marcin.jasi.roadmemorizer.roadsArchive.domain.entity.Road;
@@ -53,8 +51,10 @@ public class DataSourceModule {
 
     @Provides
     @PerAppScope
-    LocationDatabaseDataSource provideLocationDatabaseDataSource(AppDatabase database, DataMapper<LocationData, LatLng> entityMapper) {
-        return new LocationDatabaseDataSource(database, entityMapper);
+    LocationDatabaseDataSource provideLocationDatabaseDataSource(AppDatabase database,
+                                                                 DataMapper<LocationData, LatLng> entityMapper,
+                                                                 ThreadExecutor threadExecutor) {
+        return new LocationDatabaseDataSource(database, entityMapper, threadExecutor);
     }
 
     @Provides

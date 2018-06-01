@@ -23,4 +23,6 @@ public class Constants {
     public static final String GOOGLE_PLACES_URL = "https://maps.googleapis.com/";
     public static final String GOOGLE_PLACES_ID_URL = "https://maps.googleapis.com/";
 
+    public static final String API_KEY_NAME = "com.google.android.maps.v2.API_KEY";
+
 }

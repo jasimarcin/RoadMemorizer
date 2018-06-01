@@ -5,6 +5,7 @@ import com.marcin.jasi.roadmemorizer.database.AppDatabase;
 import com.marcin.jasi.roadmemorizer.database.data.entities.LocationData;
 import com.marcin.jasi.roadmemorizer.database.data.entities.RoadData;
 import com.marcin.jasi.roadmemorizer.general.common.data.DataMapper;
+import com.marcin.jasi.roadmemorizer.general.common.schedulers.ThreadExecutor;
 
 import java.util.List;
 
@@ -16,15 +17,19 @@ public class LocationDatabaseDataSource {
 
     private AppDatabase appDatabase;
     private DataMapper<LocationData, LatLng> entityMapper;
+    private ThreadExecutor threadExecutor;
 
-    public LocationDatabaseDataSource(AppDatabase appDatabase, DataMapper<LocationData, LatLng> entityMapper) {
+    public LocationDatabaseDataSource(AppDatabase appDatabase, DataMapper<LocationData, LatLng> entityMapper,
+                                      ThreadExecutor threadExecutor) {
+
         this.appDatabase = appDatabase;
         this.entityMapper = entityMapper;
+        this.threadExecutor = threadExecutor;
     }
 
     public Observable<Long> insertNewRoad(RoadData data) {
         return Observable.fromCallable(() -> appDatabase.roadDao().insertRoad(data))
-                .subscribeOn(Schedulers.computation());
+                .subscribeOn(Schedulers.from(threadExecutor));
     }
 
     public Observable<Boolean> saveRoad(List<LocationData> data) {
@@ -33,7 +38,7 @@ public class LocationDatabaseDataSource {
                     appDatabase.locationDao().insertRoad(data);
                     return true;
                 })
-                .subscribeOn(Schedulers.computation())
+                .subscribeOn(Schedulers.from(threadExecutor))
                 .onErrorReturn(error -> {
                     Timber.d(error);
                     return false;
@@ -46,7 +51,7 @@ public class LocationDatabaseDataSource {
                     appDatabase.roadDao().uploadRoadFilename(filename, roadId);
                     return true;
                 })
-                .subscribeOn(Schedulers.computation())
+                .subscribeOn(Schedulers.from(threadExecutor))
                 .onErrorReturn(error -> {
                     Timber.d(error);
                     return false;
