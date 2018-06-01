@@ -8,7 +8,7 @@ import com.marcin.jasi.roadmemorizer.general.common.schedulers.PostExecutionThre
 import com.marcin.jasi.roadmemorizer.general.common.schedulers.ThreadExecutor;
 import com.marcin.jasi.roadmemorizer.locationTracker.domain.interactor.SaveRoadUseCase;
 import com.marcin.jasi.roadmemorizer.roadLoader.data.dataSource.PlacesCloudDataSource;
-import com.marcin.jasi.roadmemorizer.roadLoader.interactor.GetPlaceIdUseCase;
+import com.marcin.jasi.roadmemorizer.roadLoader.interactor.GetPlaceAddresUseCase;
 import com.marcin.jasi.roadmemorizer.roadLoader.interactor.GetRoadPackUseCase;
 import com.marcin.jasi.roadmemorizer.roadsArchive.domain.interactor.GetRoadsListUseCase;
 import com.marcin.jasi.roadmemorizer.roadsArchive.domain.repository.RoadArchiveRepository;
@@ -23,9 +23,9 @@ public class UseCaseModule {
 
     @Provides
     @PerAppScope
-    public GetPlaceIdUseCase provideGetPlaceIdUseCase(ThreadExecutor threadExecutor, PostExecutionThread postExecutionThread
+    public GetPlaceAddresUseCase provideGetPlaceIdUseCase(ThreadExecutor threadExecutor, PostExecutionThread postExecutionThread
             , PlacesCloudDataSource dataSource) {
-        return new GetPlaceIdUseCase(threadExecutor, postExecutionThread, dataSource);
+        return new GetPlaceAddresUseCase(threadExecutor, postExecutionThread, dataSource);
     }
 
     @Provides

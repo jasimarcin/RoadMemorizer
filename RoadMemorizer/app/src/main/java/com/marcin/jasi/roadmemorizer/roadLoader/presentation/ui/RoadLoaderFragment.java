@@ -6,14 +6,11 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.PlaceBufferResponse;
-import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -31,6 +28,10 @@ import com.marcin.jasi.roadmemorizer.main.MainActivity;
 import com.marcin.jasi.roadmemorizer.roadLoader.di.DaggerRoadLoaderComponent;
 import com.marcin.jasi.roadmemorizer.roadLoader.presentation.entity.RoadPack;
 
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -117,7 +118,6 @@ public class RoadLoaderFragment extends CommonFragment {
 
             setupMarkers(roadPack, googleMap);
             animateToRoad(roadPack, googleMap);
-
         });
     }
 
@@ -128,39 +128,20 @@ public class RoadLoaderFragment extends CommonFragment {
         Marker startMarker = googleMap.addMarker(new MarkerOptions().position(startPoint));
         Marker endMarker = googleMap.addMarker(new MarkerOptions().position(endPoint));
 
-        disposable.add(loadPointInfo(startPoint, startMarker));
-//        disposable.add(loadPointInfo(endPoint, endMarker));
+        loadPointsInfo(startPoint, endPoint, startMarker, endMarker);
     }
 
-    private Disposable loadPointInfo(LatLng startPoint, Marker startMarker) {
-        return viewModel
-                .getPlaceId(startPoint)
-                .filter(id -> !id.equals(Constants.EMPTY_STRING))
-                .flatMap(this::getPlaceFromId)
-                .subscribe(place -> {
-                    supportMapFragment.getMapAsync(googleMap -> {
-                        startMarker.setTitle(place.getName().toString());
-                    });
-                }, Timber::d);
-    }
+    private void loadPointsInfo(LatLng startPoint, LatLng endPoint, Marker startMarker, Marker endMarker) {
+        List<Pair<LatLng, Marker>> pointsToLoad = new ArrayList<>();
 
-    public Observable<Place> getPlaceFromId(String placeId) {
-        return Observable.create(emitter -> {
+        pointsToLoad.add(new Pair<>(startPoint, startMarker));
+        pointsToLoad.add(new Pair<>(endPoint, endMarker));
 
-            Places.getGeoDataClient(getActivity()).getPlaceById(placeId)
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            PlaceBufferResponse places = task.getResult();
-                            Place place = places.get(0);
-                            places.release();
-
-                            emitter.onNext(place);
-                        } else {
-                            emitter.onError(new Exception("Place not found"));
-                        }
-                    });
-
-        });
+        disposable.add(viewModel.loadPointsInfo(pointsToLoad, data ->
+                supportMapFragment.getMapAsync(googleMap -> {
+                    data.second.setTitle(data.first);
+                    data.second.showInfoWindow();
+                })));
     }
 
     private void animateToRoad(RoadPack roadPack, GoogleMap googleMap) {

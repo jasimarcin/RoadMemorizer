@@ -7,5 +7,6 @@
     <string name="save_button_text">ZAPISZ</string>
     <string name="start_saving_button_text">ROZPOCZNIJ ZAPIS</string>
     <string name="road_is_saving">Droga jest zapisywana</string>
+    <string name="place_not_found_message">Place not found</string>
 
 </resources>

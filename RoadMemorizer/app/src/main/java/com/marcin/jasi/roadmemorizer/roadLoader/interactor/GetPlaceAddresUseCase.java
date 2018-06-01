@@ -8,12 +8,12 @@ import com.marcin.jasi.roadmemorizer.roadLoader.data.dataSource.PlacesCloudDataS
 
 import io.reactivex.Observable;
 
-public class GetPlaceIdUseCase extends CommonIOUseCase<String, LatLng> {
+public class GetPlaceAddresUseCase extends CommonIOUseCase<String, LatLng> {
 
     private PlacesCloudDataSource dataSource;
 
 
-    public GetPlaceIdUseCase(ThreadExecutor threadExecutor, PostExecutionThread postExecutionThread
+    public GetPlaceAddresUseCase(ThreadExecutor threadExecutor, PostExecutionThread postExecutionThread
             , PlacesCloudDataSource dataSource) {
         super(threadExecutor, postExecutionThread);
         this.dataSource = dataSource;
@@ -21,7 +21,7 @@ public class GetPlaceIdUseCase extends CommonIOUseCase<String, LatLng> {
 
     @Override
     public Observable<String> buildObservable(LatLng item) {
-        return dataSource.getPlaceId(item);
+        return dataSource.getPlaceFormattedAddres(item);
     }
 
 }

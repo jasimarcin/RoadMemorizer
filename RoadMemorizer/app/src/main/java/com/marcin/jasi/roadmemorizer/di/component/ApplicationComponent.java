@@ -16,13 +16,11 @@ import com.marcin.jasi.roadmemorizer.di.module.UseCaseModule;
 import com.marcin.jasi.roadmemorizer.di.scope.PerAppScope;
 import com.marcin.jasi.roadmemorizer.general.common.data.LocationProvidersHelper;
 import com.marcin.jasi.roadmemorizer.general.common.data.LocationTrackerMediator;
-import com.marcin.jasi.roadmemorizer.general.common.schedulers.PostExecutionThread;
-import com.marcin.jasi.roadmemorizer.general.common.schedulers.ThreadExecutor;
 import com.marcin.jasi.roadmemorizer.general.helpers.BitmapSaveHelper;
 import com.marcin.jasi.roadmemorizer.general.helpers.NotificationHelper;
 import com.marcin.jasi.roadmemorizer.locationTracker.data.LocationSaverServiceDataSource;
 import com.marcin.jasi.roadmemorizer.locationTracker.domain.interactor.SaveRoadUseCase;
-import com.marcin.jasi.roadmemorizer.roadLoader.interactor.GetPlaceIdUseCase;
+import com.marcin.jasi.roadmemorizer.roadLoader.interactor.GetPlaceAddresUseCase;
 import com.marcin.jasi.roadmemorizer.roadLoader.interactor.GetRoadPackUseCase;
 import com.marcin.jasi.roadmemorizer.roadsArchive.domain.interactor.GetRoadsListUseCase;
 
@@ -67,5 +65,5 @@ public interface ApplicationComponent {
 
     GetRoadsListUseCase getRoadsListUseCase();
 
-    GetPlaceIdUseCase getPlaceIdUseCase();
+    GetPlaceAddresUseCase getPlaceIdUseCase();
 }
